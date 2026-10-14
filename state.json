@@ -1,0 +1,21 @@
+{
+  "channelVersion": 1,
+  "inbox": [
+    "INSTR-2026-10-14-001"
+  ],
+  "outbox": [
+    "REQ-2026-10-14-001",
+    "REQ-2026-10-14-002"
+  ],
+  "statusOf": {
+    "INSTR-2026-10-14-001": "open",
+    "REQ-2026-10-14-001": "open",
+    "REQ-2026-10-14-002": "open"
+  },
+  "rootsOf": {
+    "INSTR-2026-10-14-001": "5e0c8cc9f3fd8b54a0da021046cfae172fb06892e0bf1502e09ee4a31ed35d96",
+    "REQ-2026-10-14-001": "d037d958122408e9495735283a334ebd1997ee0a536aacf97cf3944ad32ea0c4",
+    "REQ-2026-10-14-002": "e7b04164603862b681c9cccfa7a3d1c1444690e23db98f3619b7a7c8737042fd"
+  },
+  "channelRoot": "87901b8c858f160c97520af2339179303deb548da3ec44f3fd1697b5032b6029"
+}
