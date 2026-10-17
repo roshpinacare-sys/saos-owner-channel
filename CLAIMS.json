@@ -1,6 +1,6 @@
 {
  "schema": "saos-9agent-claims@1",
- "updatedAt": "2026-10-17T04:45:00Z",
+ "updatedAt": "2026-10-17T04:54:07Z",
  "rules": {
   "branchNaming": "agent/<agent-id>/<lane>",
   "noDirectMainPush": true,
@@ -154,6 +154,23 @@
    ],
    "status": "active-pacer-armed",
    "mergedAs": null
+  },
+  {
+   "repo": "saos-dex",
+   "lane": "W1.3-dam-floor-release",
+   "agent": "zai",
+   "branch": "agent/zai/W1.3-dam-floor-release",
+   "baseBranch": "main",
+   "baseCommit": "f1c1310",
+   "claimedAt": "2026-10-17T04:54:07Z",
+   "ttlHours": 24,
+   "summary": "OWNER RATIFIED dam-floor release — directive verbatim: 'כן תמשיך שחרר' (2026-10-17, replying to the W1.2 quantified decision item: dam-floor release ≈28 beats of fuel). Law change: WASH_FLOOR 800,000µ→0 in src/lib/dex/kernel.ts (the single point of law, also read by the kernel wash-floor gate). Effect: the 800,000µ idle wash dam becomes legal working fuel via the EXISTING GAS-RECOVERY path (wash→treasury refuel ops, 100Kµ chunks + stepOnce, zero-mint, Σcredits conserved, journaled per-op) ≈ 28 hourly beats of runway. Asset float untouched (WASH_ENABLED stays false); no vault/keys/tokens involved; Σ conserved.",
+   "evidence": [
+    "kernel.ts WASH_FLOOR is the only law point: GAS-RECOVERY (cloud-beat.ts) computes pullable = wash − WASH_FLOOR; kernel gate blocks refuel below floor",
+    "owner directive recorded verbatim in COORDINATION.md wave-1 section",
+    "baseline measured in W1.2: dam 800,000µ, net burn 28,355µ/beat, free gas 16,830µ ≈ 1 beat"
+   ],
+   "status": "armed-pending-first-beat"
   }
  ]
 }
