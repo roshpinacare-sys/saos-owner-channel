@@ -1,6 +1,6 @@
 {
   "schema": "saos-9agent-claims@1",
-  "updatedAt": "2026-10-17T02:20:00Z",
+  "updatedAt": "2026-10-17T02:45:00Z",
   "rules": {
     "branchNaming": "agent/<agent-id>/<lane>",
     "noDirectMainPush": true,
@@ -8,7 +8,8 @@
     "ttlHours": 24,
     "evidenceLaw": "claim without run-evidence is not merged",
     "irreversibleOps": "owner only, after dry-run review",
-    "identity": "commits signed roshpinacare-sys + [agent-<id>/<lane>] prefix in message"
+    "identity": "commits signed roshpinacare-sys + [agent-<id>/<lane>] prefix in message",
+    "ownerDirective2026_10_17": "NO vault changes, NO PAT/key rotation, NO history purge, NO token burning — these happen ONLY on explicit owner instruction, even as 'security fixes'. Priority: make the existing system stand up and WORK first (prove, then talk)."
   },
   "claims": [
     {
@@ -25,7 +26,9 @@
         "node --check mini-services/saos-engine/ci-cycle.mjs → OK",
         "behavior test vs real state files: current evidence=FAIL-RECORDED (fail=1) → gate DISARMED → TAKEOVER-BLOCKED-SELFTEST-RED + DELEGATION-BLOCKED-SELFTEST-RED",
         "simulated green verdict → SUITE-RAN honest → gate ARMED (self-heals on next beat)"
-      ]
+      ],
+      "status": "merged-by-adoption: agent-9 landed P0-FAILCLOSE (07f9042) on saos-cockpit first — first-claim-wins honored, their gate adopted (lease-before-money + moneyGateOpen). My delta W0.1-c (d3858a5): red-detail observability (selftestLeaseDetail — failing-vector lines). Both live at saos-cockpit HEAD.",
+      "mergedAs": "d3858a5 (delta) on top of 07f9042 (agent-9)"
     },
     {
       "repo": "saos-desk",
@@ -40,7 +43,8 @@
       "evidence": [
         "selftest.mjs G2 law verified in code before edit (7.5: paper⇒unarmed)",
         "diff = exactly 2 fields, no schema change"
-      ]
+      ],
+      "status": "merged to main (db1df7b)"
     },
     {
       "repo": "saos-dex",
@@ -57,7 +61,9 @@
         "grids/liquidity-selftest.mjs → 12/12 pass",
         "grids/params-selftest.mjs → 20/20 pass",
         "bunx tsc --noEmit → clean"
-      ]
+      ],
+      "status": "landed on rewritten main (042ea98) — note: agent-9 force-pushed saos-dex main (unrelated-histories); cherry-picked, re-verified on new base: BMC PASS, liquidity 12/12, params 20/20",
+      "mergedAs": "042ea98"
     },
     {
       "repo": "TruthRail",
@@ -72,7 +78,8 @@
       "evidence": [
         "grep after fix: 'branches: [ main ]'",
         "single-line diff, no other changes"
-      ]
+      ],
+      "status": "merged to main (d99a78d)"
     },
     {
       "repo": "saos-owner-channel",
