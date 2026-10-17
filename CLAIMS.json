@@ -1,6 +1,6 @@
 {
  "schema": "saos-9agent-claims@1",
- "updatedAt": "2026-10-17T04:05:00Z",
+ "updatedAt": "2026-10-17T04:45:00Z",
  "rules": {
   "branchNaming": "agent/<agent-id>/<lane>",
   "noDirectMainPush": true,
@@ -141,14 +141,18 @@
    "baseCommit": "d0d1895",
    "claimedAt": "2026-10-17T04:05:00Z",
    "ttlHours": 24,
-   "summary": "Operational lease: the dex chain froze at h417207 (no beat since 02:45:06Z). Root cause measured: (a) Domain public coordinator dex-beat + ALL 95 Domain workflows are disabled_manually (only pages-build-deployment active) — no cloud cadence; (b) the local dex-beat[bot] runner from the W0.3-b session stopped after 3 beats. Action: restart the canonical local pacer — hourly cloud-beat.ts at :53 per R71 law (3600 heavy ticks), machine-state commits FF-only. No code changes, no keys, no vault, no token work. Gas recovery already landed in production (wash 995,900→800,000µ at the owner floor; arena 20→5,480µ; soldiers+bots funded; honest volume resumed: 223 trades / 2.56M µ on 10-17).",
+   "summary": "Operational lease EXECUTED: chain unfrozen (f1c1310, h417207→h420807) and the canonical local pacer armed (hourly :53 per R71; scripts dex-beat-loop.sh + dex-beat-keeper.sh, machine-churn FF-only, dex-beat[bot] identity). DECISION ITEM FOR OWNER (measured): the gas economy is a closed loop with a 0.8% net burn — ΔΣ = −28,355µ per 3600-tick beat; free gas outside the wash dam = 16,830µ ≈ ONE more heavy beat; the wash dam (800,000µ at WASH_FLOOR, owner law) ≈ ~28 hourly beats of runway. The economy will honestly idle-at-famine (self-throttled rejections, like 02:35Z) when free gas exhausts — until the owner ratifies dam-floor release, or orders a cadence/recycle policy change. No gas provisioning done by us; wash untouched.",
    "evidence": [
     "db/state-snapshot.json @ origin/main: savedAt 02:45:06Z, height 417207, credits wash=800000/arena=5480/treasury=1855 — recovery + honest volume measured (dex-metrics 10-17: trades24=223, vol24QuoteMu=2,559,089)",
     "Domain Actions API: workflows census 96 total — 95 disabled_manually, 1 active (pages-build-deployment); dex-beat.yml dispatch returns HTTP 422 'disabled workflow'; last successful schedule run 01:32:01Z",
     "saos-dex Actions: dex-beat run from 10-15 still 'queued' (private billing wall); local /tmp/beat2-4.log: 02:35 famine 65/65 rejected -> 02:38 GAS-RECOVERY +195,900µ -> 02:45 only 2/33 rejected",
-    "cloud-beat.ts header = the canonical law (deterministic ticks, chain-is-home, honest publish skip without CONSOLE_TOKEN)"
+    "cloud-beat.ts header = the canonical law (deterministic ticks, chain-is-home, honest publish skip without CONSOLE_TOKEN)",
+    "first unfreeze beat LANDED: f1c1310 'dex-beat 04:35:20Z h417207→h420807 · 3600 ticks' — pushed to saos-dex main (FF), chain alive",
+    "boot gate honored: first attempt refused (BlockHeader table missing → SNAPSHOT integrity refuse, evidence untouched) — fixed via the workflow's own Roast-65 path (prisma db push on runtime-only dex.db); zero evidence touched",
+    "FOUNTAIN measured alive: book-gas meter collectedMu=3,699,405 == recycledMu (3.6Mµ recycled in ONE beat, cap 100K/100-blocks); feeMinted life-total 35,228,515µ",
+    "both reflation sources at floor: feeMeter=8,000 (== LADDER_FUEL_FLOOR), treasuryProfit=36µ"
    ],
-   "status": "active",
+   "status": "active-pacer-armed",
    "mergedAs": null
   }
  ]
