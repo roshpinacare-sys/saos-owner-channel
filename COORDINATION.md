@@ -68,3 +68,11 @@
 אשרור השבת-float של ה-wash, והפעלה-מחדש של ה-ledger הפנימי (עומד מ-10-14).
 
 הפרטים המלאים: `CLAIMS.json` (lease W1.1).
+
+**更新 04:15Z — 持续性已证实：** 第二跳合法绿 beat 落地 `ea30cac`
+(03:40:45.183Z, 桃 cdd60f4 = 修复+门+观测 全树): `SELFTEST-RAN-GREEN` +
+`TAKEOVER-EXECUTED` + `DELEGATED` 81.545 SP + `custody 14/14`。连续两跳合法绿
+(02:55:17Z + 03:40:45Z) — 循环是持续运行, 非一次性。另实测: beat 提交与
+30min timeout 墙是真实赛跑 (上一跳 96bfd67 提交于 03:25:06Z, job 被切于
+03:25:09Z — 3 秒之差); 本跳预算充裕 (~24min 完成)。timeout 30→45 仍是
+候补修复, 等候 owner/指定合并者 (法则 #1: 不直接推 main)。

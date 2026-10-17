@@ -1,6 +1,6 @@
 {
  "schema": "saos-9agent-claims@1",
- "updatedAt": "2026-10-17T04:10:00Z",
+ "updatedAt": "2026-10-17T04:15:00Z",
  "rules": {
   "branchNaming": "agent/<agent-id>/<lane>",
   "noDirectMainPush": true,
@@ -119,14 +119,16 @@
    "baseCommit": "cdd60f4 (saos-cockpit) / d3e7f93 (saos-runtime)",
    "claimedAt": "2026-10-17T04:10:00Z",
    "ttlHours": 24,
-   "summary": "Wave-1 verification: the sovereignty loop is running lawfully again, measured end-to-end. Local red (frozen since 2026-10-16T14:29Z) root-caused as live seed churn and fixed by 784346d (SAOS_MEMORY_SEED_DIR isolation; expectations untouched, new vector 42.8). Cloud beat 02:55:17Z is the FIRST lawful money beat on a post-P0-FAILCLOSE tree: GREEN lease + TAKEOVER-EXECUTED + DELEGATED 100.781 SP + custody 14/14. Watchdog green (d3e7f93, redCount 0). Pulse chain alive (timeout-cancelled 02:54 heartbeat still committed its beat; pulse job dispatched 38999674953 on the fully-fixed tree cdd60f4).",
+   "summary": "Wave-1 verification: the sovereignty loop is running lawfully again, measured end-to-end. Local red (frozen since 2026-10-16T14:29Z) root-caused as live seed churn and fixed by 784346d (SAOS_MEMORY_SEED_DIR isolation; expectations untouched, new vector 42.8). Cloud beat 02:55:17Z is the FIRST lawful money beat on a post-P0-FAILCLOSE tree: GREEN lease + TAKEOVER-EXECUTED + DELEGATED 100.781 SP + custody 14/14. Watchdog green (d3e7f93, redCount 0). Pulse chain alive (timeout-cancelled 02:54 heartbeat still committed its beat; pulse job dispatched 38999674953 on the fully-fixed tree cdd60f4). SUSTAINED as of 04:15Z: two consecutive lawful-green beats.",
    "evidence": [
     "node selftest.mjs from sandbox on fixed tree: SELFTEST 1823/1823 PASS (2026-10-17T~04:00Z)",
     "saos-runtime@main:state/beat/ci-last-heartbeat.json @ 02:55:17.309Z: selftestLease=SELFTEST-RAN-GREEN, evidence=SUITE-RAN/honest:true, dex=TAKEOVER-EXECUTED (anchor-stale+3h gap), delegation=DELEGATED ops=3 sp=100.781, custody=14/14",
     "beat history 6a6598f/a63b474/7061e04 (00:25/01:00/01:40Z): RED lease + EXECUTED = the measured fail-open era; structurally impossible after 07f9042 (02:16Z)",
     "watchdog d3e7f93 03:25:32Z: redCount 0 (previous reds 00:45/01:25 self-healed)",
     "Actions API: run 38996754100 heartbeat=cancelled(30min timeout, beat committed 02:55:17Z before cut), pulse=success 03:40:20 -> dispatched run 38999674953 (in flight, tree cdd60f4)",
-    "git seed history: memory-seed/published.jsonl rows=0 at b44eb75/4859169/9b8238b/784346d, rows=4 at cdd60f4 (post-fix churn committed — harmless under 784346d isolation)"
+    "git seed history: memory-seed/published.jsonl rows=0 at b44eb75/4859169/9b8238b/784346d, rows=4 at cdd60f4 (post-fix churn committed — harmless under 784346d isolation)",
+    "SUSTAINED: second lawful-green beat ea30cac @ 03:40:45.183Z on tree cdd60f4 (fix+gates+observability): SELFTEST-RAN-GREEN + TAKEOVER-EXECUTED + DELEGATED 81.545 SP + custody 14/14 — two consecutive lawful money beats",
+    "measured race: beat commit vs 30min job timeout (96bfd67 committed 03:25:06Z, job cut 03:25:09Z — 3s margin; this beat ~24min, comfortable) — timeout 30->45 remains a candidate fix pending owner/designated merger (law #1: no direct main)"
    ],
    "status": "verified-live",
    "mergedAs": null
