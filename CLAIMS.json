@@ -1,6 +1,6 @@
 {
  "schema": "saos-9agent-claims@1",
- "updatedAt": "2026-10-17T04:54:07Z",
+ "updatedAt": "2026-10-17T05:04:06Z",
  "rules": {
   "branchNaming": "agent/<agent-id>/<lane>",
   "noDirectMainPush": true,
@@ -168,9 +168,15 @@
    "evidence": [
     "kernel.ts WASH_FLOOR is the only law point: GAS-RECOVERY (cloud-beat.ts) computes pullable = wash − WASH_FLOOR; kernel gate blocks refuel below floor",
     "owner directive recorded verbatim in COORDINATION.md wave-1 section",
-    "baseline measured in W1.2: dam 800,000µ, net burn 28,355µ/beat, free gas 16,830µ ≈ 1 beat"
+    "baseline measured in W1.2: dam 800,000µ, net burn 28,355µ/beat, free gas 16,830µ ≈ 1 beat",
+    "Σcredits by commit (state-snapshot.json): d0d1895=845,185 (wash 800,000) | f1c1310=816,830 (wash 800,000, famine burn 28,355) | f1de244=20,228 (wash 0, release burn 796,602)",
+    "dex-metrics day 2026-10-17: dFills=1238, dSwaps=195 (10-15: dFills=0, trades24=0; 10-16: 0) — real volume returned only in the post-release beats",
+    "kernel.ts:149 FUEL_FUNDERS includes 'wash' (SETTLE-19-c); funderFor/kernel gate read WASH_FLOOR at call-time → floor 0 opened the ladder to the dam",
+    "tape.jsonl in f1de244: no washrecall ops → GAS-RECOVERY pullable=0 is NOT the drain path; the funders ladder is (wash=0 at 04:58 snapshot confirms ladder drained it)"
    ],
-   "status": "armed-pending-first-beat"
+   "status": "executed-with-material-correction",
+   "executedAt": "2026-10-17T05:04:06Z",
+   "outcome": "DAM-RELEASE landed 923ba59 on saos-dex main (branch agent/zai/W1.3, FF). Release-beat f1de244 (04:58:32Z, h420817→h424425, 3600 ticks) — the FIRST beat under floor=0 — consumed the dam: FUEL_FUNDERS (wash is SETTLE-19-c ladder member, floor read at call-time) legally drew the 800,000µ to fund starving workers; workers traded real volume (day 10-17: 1238 fills / 195 swaps, vs 0 fills on 10-15/16) and the gas burned as GAS_TABLE tolls. MATERIAL CORRECTION to my W1.2 estimate: '≈28 beats' assumed famine-rate burn (28,355µ/beat, re-measured on the 04:35 famine beat: Σ 845,185→816,830). Under REAL load the burn is ≈796,602µ/beat (Σ 816,830→20,228 across the release beat) — the dam bought ~1-2 heavy beats of real trading, not 28. Σcredits now 20,228µ: without a structural decision the next beats honestly self-throttle back to famine. Zero external money, zero keys, Σ internal-conserved-except-burn; full trail: commits 923ba59 + f1de244 + hub af23660."
   }
  ]
 }
