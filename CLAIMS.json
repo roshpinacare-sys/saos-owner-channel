@@ -1,6 +1,6 @@
 {
   "schema": "saos-9agent-claims@1",
-  "updatedAt": "2026-10-17T21:12:00Z",
+  "updatedAt": "2026-10-17T23:40:00Z",
   "rules": {
     "branchNaming": "agent/<agent-id>/<lane>",
     "noDirectMainPush": true,
@@ -214,6 +214,23 @@
         "heartbeatGaps": "git log state/beat/ci-last-heartbeat.json: 12:06,12:49,13:34,14:19,15:01,15:46,16:32,17:17,18:00,18:44,19:24,20:03 -> gaps 39-46min",
         "falseRedFixedByOthers": "saos-runtime 7632832 (G4) + 39352f5 (agent-9 wave-7) mirror-skip; grid-status 21:03 fleetDigestAgeS=14535 true",
         "economy": "state-snapshot origin/main: sum(credits)=19,556 (from 45,820 @10:40Z; ~2.6K/beat slow burn post-recalibration; flywheel not yet net-positive -> owner's economic decision, untouched"
+      }
+    },
+    {
+      "repo": "saos-dex + saos-runtime + saos-owner-channel",
+      "lane": "W1.6-single-instance-rhythm-honesty",
+      "agent": "zai",
+      "branch": "agent/zai/W1.6-single-instance (saos-dex) + agent/zai/W1.6-pulse-rhythm (saos-runtime) + agent/zai/W1.6-bootstrap (hub) + honest-label direct-FF on saos-dex main (9402321, owner-visible slip: branch dance missed, commit was strict-FF, never forced)",
+      "baseBranch": "main",
+      "baseCommit": "61ecfd5 / 837c78e",
+      "claimedAt": "2026-10-17T23:40:00Z",
+      "ttlHours": 24,
+      "summary": "OWNER DIRECTIVE round 2: review + execute + expand. Four measured hardenings: (1) CROSS-PROCESS SINGLE-INSTANCE LAW — measured THREE bun --hot schedulers firing at :53 (two 20:07 zombies outlived the audit wipe since processes outlive deleted files; the 21:04 relaunch silently lost the port bind while the old-code zombie served /health, so BOOTSTRAP's health-check blessed the wrong owner); fix: flock -n held for process lifetime in the dev script + pid in boot log + BOOTSTRAP note; double-start measured: instant refusal, zero second arm (61ecfd5 + hub 9c5e2d4). (2) PULSE RHYTHM ROOT-CAUSED — the 2x divergence flagged in W1.5 is now measured to the step: Hyper-grid burst 924s + exec29 presence-matrix 546s grew work to 27.5min while the fixed sleep 900 kept billing a sleeping runner (runs 41/42/42/46min); ONE-NUMBER diff sleep 900->120 keeps loop damping, cadence -> ~29-30min, ~7.5 runner-hours/day of sleep no longer billed; probe parallelization = owner's call (8845fbe). (3) HONEST BEAT LABEL — '0 credits' was claims-credited-this-beat, misread as an empty economy; label now reports claimed<N> + Sigma<real> from the same snapshot the W1.5 gate parses (9402321). (4) ECONOMY MEASURED for the owner's structural decision: Sigma oscillates 19.5K->37K->24.5K (net +4,951 over 2h, ~break-even), feeMeter income rising 1,254->9,794/day, treasury 0 (fuel-provisioned), 4 new agents seeded at 599, bot-e largest holder 6,082 — a living circular micro-economy, not a famine; levers remain owner-gated (GAS_TABLE / mint_fuel ~612u capacity / recycle policy).",
+      "evidence": {
+        "threeSchedulers": "ps: bun --hot x3 (1213,1215@20:07 + 2321@21:04); ss: port 3044 owned by pid 1215 (old-code zombie)",
+        "singleInstanceProof": "double-start test rc=1 instant; port owned by pid 3964 under flock",
+        "pulseSteps": "run 39070915905: burst 924s + presence 546s + sleep+dispatch 902s",
+        "economy": "Σ 24,507 @h448,540; feeMeter 9,794; credits per-account incl. shachar/aluf/erez/gal 599 each"
       }
     }
   ]
