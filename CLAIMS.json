@@ -1,115 +1,135 @@
 {
-  "schema": "saos-9agent-claims@1",
-  "updatedAt": "2026-10-17T03:05:00Z",
-  "rules": {
-    "branchNaming": "agent/<agent-id>/<lane>",
-    "noDirectMainPush": true,
-    "firstClaimWins": true,
-    "ttlHours": 24,
-    "evidenceLaw": "claim without run-evidence is not merged",
-    "irreversibleOps": "owner only, after dry-run review",
-    "identity": "commits signed roshpinacare-sys + [agent-<id>/<lane>] prefix in message",
-    "ownerDirective2026_10_17": "NO vault changes, NO PAT/key rotation, NO history purge, NO token burning — these happen ONLY on explicit owner instruction, even as 'security fixes'. Priority: make the existing system stand up and WORK first (prove, then talk)."
+ "schema": "saos-9agent-claims@1",
+ "updatedAt": "2026-10-17T04:10:00Z",
+ "rules": {
+  "branchNaming": "agent/<agent-id>/<lane>",
+  "noDirectMainPush": true,
+  "firstClaimWins": true,
+  "ttlHours": 24,
+  "evidenceLaw": "claim without run-evidence is not merged",
+  "irreversibleOps": "owner only, after dry-run review",
+  "identity": "commits signed roshpinacare-sys + [agent-<id>/<lane>] prefix in message",
+  "ownerDirective2026_10_17": "NO vault changes, NO PAT/key rotation, NO history purge, NO token burning — these happen ONLY on explicit owner instruction, even as 'security fixes'. Priority: make the existing system stand up and WORK first (prove, then talk)."
+ },
+ "claims": [
+  {
+   "repo": "steem",
+   "lane": "W0.1",
+   "agent": "zai",
+   "branch": "agent/zai/W0.1-selftest-chain-gate",
+   "baseBranch": "saos-cockpit",
+   "baseCommit": "b44eb75",
+   "claimedAt": "2026-10-17T02:05:00Z",
+   "ttlHours": 24,
+   "summary": "SELFTEST RED = ZERO CHAIN MOVEMENT: verifySelftestEvidence gate (fail-closed) wired before R245 dex-takeover runCycle + before delegation rail; blocked verdicts stay red in watchdog (not in WAIT set); dexEvidence/delegationEvidence heartbeat fields added",
+   "evidence": [
+    "node --check mini-services/saos-engine/ci-cycle.mjs → OK",
+    "behavior test vs real state files: current evidence=FAIL-RECORDED (fail=1) → gate DISARMED → TAKEOVER-BLOCKED-SELFTEST-RED + DELEGATION-BLOCKED-SELFTEST-RED",
+    "simulated green verdict → SUITE-RAN honest → gate ARMED (self-heals on next beat)"
+   ],
+   "status": "merged-by-adoption: agent-9 landed P0-FAILCLOSE (07f9042) on saos-cockpit first — first-claim-wins honored, their gate adopted (lease-before-money + moneyGateOpen). My delta W0.1-c (d3858a5): red-detail observability (selftestLeaseDetail — failing-vector lines). Both live at saos-cockpit HEAD.",
+   "mergedAs": "d3858a5 (delta) on top of 07f9042 (agent-9)"
   },
-  "claims": [
-    {
-      "repo": "steem",
-      "lane": "W0.1",
-      "agent": "zai",
-      "branch": "agent/zai/W0.1-selftest-chain-gate",
-      "baseBranch": "saos-cockpit",
-      "baseCommit": "b44eb75",
-      "claimedAt": "2026-10-17T02:05:00Z",
-      "ttlHours": 24,
-      "summary": "SELFTEST RED = ZERO CHAIN MOVEMENT: verifySelftestEvidence gate (fail-closed) wired before R245 dex-takeover runCycle + before delegation rail; blocked verdicts stay red in watchdog (not in WAIT set); dexEvidence/delegationEvidence heartbeat fields added",
-      "evidence": [
-        "node --check mini-services/saos-engine/ci-cycle.mjs → OK",
-        "behavior test vs real state files: current evidence=FAIL-RECORDED (fail=1) → gate DISARMED → TAKEOVER-BLOCKED-SELFTEST-RED + DELEGATION-BLOCKED-SELFTEST-RED",
-        "simulated green verdict → SUITE-RAN honest → gate ARMED (self-heals on next beat)"
-      ],
-      "status": "merged-by-adoption: agent-9 landed P0-FAILCLOSE (07f9042) on saos-cockpit first — first-claim-wins honored, their gate adopted (lease-before-money + moneyGateOpen). My delta W0.1-c (d3858a5): red-detail observability (selftestLeaseDetail — failing-vector lines). Both live at saos-cockpit HEAD.",
-      "mergedAs": "d3858a5 (delta) on top of 07f9042 (agent-9)"
-    },
-    {
-      "repo": "saos-desk",
-      "lane": "W0.2",
-      "agent": "zai",
-      "branch": "agent/zai/W0.2-desk-paper",
-      "baseBranch": "main",
-      "baseCommit": "17f33c8",
-      "claimedAt": "2026-10-17T02:00:00Z",
-      "ttlHours": 24,
-      "summary": "mandate.json execution.mode live→paper, liveOwnerArmed true→false (G2-consistent paper⇒unarmed); reversible by owner re-arm word",
-      "evidence": [
-        "selftest.mjs G2 law verified in code before edit (7.5: paper⇒unarmed)",
-        "diff = exactly 2 fields, no schema change"
-      ],
-      "status": "merged to main (db1df7b)"
-    },
-    {
-      "repo": "saos-dex",
-      "lane": "W0.3",
-      "agent": "zai",
-      "branch": "agent/zai/W0.3-dex-wash-ci",
-      "baseBranch": "main",
-      "baseCommit": "c3e2bd3",
-      "claimedAt": "2026-10-17T02:10:00Z",
-      "ttlHours": 24,
-      "summary": "THE-WASH neutralized (WASH_ENABLED=false compile gate, washTick early-exit, replay-deterministic) + ci.yml push trigger fixed ('ain]' never matched → [ main ])",
-      "evidence": [
-        "bun harness/bmc.ts → PASS (8,000 sequences, applies=24,249, B1..B9 hold)",
-        "grids/liquidity-selftest.mjs → 12/12 pass",
-        "grids/params-selftest.mjs → 20/20 pass",
-        "bunx tsc --noEmit → clean"
-      ],
-      "status": "landed on rewritten main (042ea98) — note: agent-9 force-pushed saos-dex main (unrelated-histories); cherry-picked, re-verified on new base: BMC PASS, liquidity 12/12, params 20/20",
-      "mergedAs": "042ea98"
-    },
-    {
-      "repo": "TruthRail",
-      "lane": "W0.4",
-      "agent": "zai",
-      "branch": "agent/zai/W0.4-tr-exposure-yaml",
-      "baseBranch": "main",
-      "baseCommit": "1c83b34",
-      "claimedAt": "2026-10-17T01:58:00Z",
-      "ttlHours": 24,
-      "summary": "exposure-gate.yml push trigger fixed: branches 'ain]' (corrupted selector — gate never ran on any push) → [ main ]",
-      "evidence": [
-        "grep after fix: 'branches: [ main ]'",
-        "single-line diff, no other changes"
-      ],
-      "status": "merged to main (d99a78d)"
-    },
-    {
-      "repo": "saos-owner-channel",
-      "lane": "W0-hub",
-      "agent": "zai",
-      "branch": "main",
-      "baseBranch": "main",
-      "baseCommit": "ad35f6c",
-      "claimedAt": "2026-10-17T02:18:00Z",
-      "ttlHours": 24,
-      "summary": "bootstrap-only: COORDINATION.md (9-agent laws + lane map) + CLAIMS.json (lease registry). Additive files; does not touch PROTOCOL.md envelopes",
-      "evidence": [
-        "files are new at repo root, zero existing files modified"
-      ]
-    },
-    {
-      "repo": "saos-dex",
-      "lane": "W0.3-b",
-      "agent": "zai",
-      "branch": "main (direct, engine-verified)",
-      "baseCommit": "042ea98",
-      "claimedAt": "2026-10-17T02:50:00Z",
-      "ttlHours": 24,
-      "summary": "wash decommission completed in the beat + GAS-RECOVERY pre-ticks. MEASURED: wash wallet held 995,900µ of Σ=1,008,792µ credits (98.7%) — the dead machine consumed the exchange's entire gas supply (treasury=22µ, arena=20µ, 100% op rejection). Fix: (1) wash float/gas provisioning gated on WASH_ENABLED; (2) GAS-RECOVERY before the tick loop pulls only the legal band above WASH_FLOOR=800,000µ (owner dam law respected to the µ).",
-      "evidence": [
-        "isolated beat CLOUD_TICKS=180: pull +195,900µ → rejection 100%→8-18%; arena 20→5,480; fills 86,577; feeMeter 8,000; Σ conserved by construction",
-        "tsc clean; probe on live chain API: refuel machinery fires at tick 1 with funded treasury",
-        "pushed as 2320fcff on main; canonical chain advanced h416676→h417198 through honest isolated beat runs (dex-beat[bot] commits, deterministic continuation)"
-      ],
-      "ownerDecisionNeeded": "burn 163.6Kµ/beat vs fee-recycle 8K/beat: without releasing part of the 800K wash reserve (dam law 2026-10-15) the gas economy re-starves within ~5 beats. Options: (a) release wash reserve to X floor, (b) cut GAS_TABLE burn, (c) enlarge mint_fuel — owner's call (dam law requires owner ratification for floor deviations)."
-    }
-  ]
+  {
+   "repo": "saos-desk",
+   "lane": "W0.2",
+   "agent": "zai",
+   "branch": "agent/zai/W0.2-desk-paper",
+   "baseBranch": "main",
+   "baseCommit": "17f33c8",
+   "claimedAt": "2026-10-17T02:00:00Z",
+   "ttlHours": 24,
+   "summary": "mandate.json execution.mode live→paper, liveOwnerArmed true→false (G2-consistent paper⇒unarmed); reversible by owner re-arm word",
+   "evidence": [
+    "selftest.mjs G2 law verified in code before edit (7.5: paper⇒unarmed)",
+    "diff = exactly 2 fields, no schema change"
+   ],
+   "status": "merged to main (db1df7b)"
+  },
+  {
+   "repo": "saos-dex",
+   "lane": "W0.3",
+   "agent": "zai",
+   "branch": "agent/zai/W0.3-dex-wash-ci",
+   "baseBranch": "main",
+   "baseCommit": "c3e2bd3",
+   "claimedAt": "2026-10-17T02:10:00Z",
+   "ttlHours": 24,
+   "summary": "THE-WASH neutralized (WASH_ENABLED=false compile gate, washTick early-exit, replay-deterministic) + ci.yml push trigger fixed ('ain]' never matched → [ main ])",
+   "evidence": [
+    "bun harness/bmc.ts → PASS (8,000 sequences, applies=24,249, B1..B9 hold)",
+    "grids/liquidity-selftest.mjs → 12/12 pass",
+    "grids/params-selftest.mjs → 20/20 pass",
+    "bunx tsc --noEmit → clean"
+   ],
+   "status": "landed on rewritten main (042ea98) — note: agent-9 force-pushed saos-dex main (unrelated-histories); cherry-picked, re-verified on new base: BMC PASS, liquidity 12/12, params 20/20",
+   "mergedAs": "042ea98"
+  },
+  {
+   "repo": "TruthRail",
+   "lane": "W0.4",
+   "agent": "zai",
+   "branch": "agent/zai/W0.4-tr-exposure-yaml",
+   "baseBranch": "main",
+   "baseCommit": "1c83b34",
+   "claimedAt": "2026-10-17T01:58:00Z",
+   "ttlHours": 24,
+   "summary": "exposure-gate.yml push trigger fixed: branches 'ain]' (corrupted selector — gate never ran on any push) → [ main ]",
+   "evidence": [
+    "grep after fix: 'branches: [ main ]'",
+    "single-line diff, no other changes"
+   ],
+   "status": "merged to main (d99a78d)"
+  },
+  {
+   "repo": "saos-owner-channel",
+   "lane": "W0-hub",
+   "agent": "zai",
+   "branch": "main",
+   "baseBranch": "main",
+   "baseCommit": "ad35f6c",
+   "claimedAt": "2026-10-17T02:18:00Z",
+   "ttlHours": 24,
+   "summary": "bootstrap-only: COORDINATION.md (9-agent laws + lane map) + CLAIMS.json (lease registry). Additive files; does not touch PROTOCOL.md envelopes",
+   "evidence": [
+    "files are new at repo root, zero existing files modified"
+   ]
+  },
+  {
+   "repo": "saos-dex",
+   "lane": "W0.3-b",
+   "agent": "zai",
+   "branch": "main (direct, engine-verified)",
+   "baseCommit": "042ea98",
+   "claimedAt": "2026-10-17T02:50:00Z",
+   "ttlHours": 24,
+   "summary": "wash decommission completed in the beat + GAS-RECOVERY pre-ticks. MEASURED: wash wallet held 995,900µ of Σ=1,008,792µ credits (98.7%) — the dead machine consumed the exchange's entire gas supply (treasury=22µ, arena=20µ, 100% op rejection). Fix: (1) wash float/gas provisioning gated on WASH_ENABLED; (2) GAS-RECOVERY before the tick loop pulls only the legal band above WASH_FLOOR=800,000µ (owner dam law respected to the µ).",
+   "evidence": [
+    "isolated beat CLOUD_TICKS=180: pull +195,900µ → rejection 100%→8-18%; arena 20→5,480; fills 86,577; feeMeter 8,000; Σ conserved by construction",
+    "tsc clean; probe on live chain API: refuel machinery fires at tick 1 with funded treasury",
+    "pushed as 2320fcff on main; canonical chain advanced h416676→h417198 through honest isolated beat runs (dex-beat[bot] commits, deterministic continuation)"
+   ],
+   "ownerDecisionNeeded": "burn 163.6Kµ/beat vs fee-recycle 8K/beat: without releasing part of the 800K wash reserve (dam law 2026-10-15) the gas economy re-starves within ~5 beats. Options: (a) release wash reserve to X floor, (b) cut GAS_TABLE burn, (c) enlarge mint_fuel — owner's call (dam law requires owner ratification for floor deviations)."
+  },
+  {
+   "repo": "saos-runtime + steem (verification-only, L9)",
+   "lane": "W1.1",
+   "agent": "zai",
+   "branch": "(no branch — read-only verification pass; fixes landed by W1-root/agent-9/beats)",
+   "baseCommit": "cdd60f4 (saos-cockpit) / d3e7f93 (saos-runtime)",
+   "claimedAt": "2026-10-17T04:10:00Z",
+   "ttlHours": 24,
+   "summary": "Wave-1 verification: the sovereignty loop is running lawfully again, measured end-to-end. Local red (frozen since 2026-10-16T14:29Z) root-caused as live seed churn and fixed by 784346d (SAOS_MEMORY_SEED_DIR isolation; expectations untouched, new vector 42.8). Cloud beat 02:55:17Z is the FIRST lawful money beat on a post-P0-FAILCLOSE tree: GREEN lease + TAKEOVER-EXECUTED + DELEGATED 100.781 SP + custody 14/14. Watchdog green (d3e7f93, redCount 0). Pulse chain alive (timeout-cancelled 02:54 heartbeat still committed its beat; pulse job dispatched 38999674953 on the fully-fixed tree cdd60f4).",
+   "evidence": [
+    "node selftest.mjs from sandbox on fixed tree: SELFTEST 1823/1823 PASS (2026-10-17T~04:00Z)",
+    "saos-runtime@main:state/beat/ci-last-heartbeat.json @ 02:55:17.309Z: selftestLease=SELFTEST-RAN-GREEN, evidence=SUITE-RAN/honest:true, dex=TAKEOVER-EXECUTED (anchor-stale+3h gap), delegation=DELEGATED ops=3 sp=100.781, custody=14/14",
+    "beat history 6a6598f/a63b474/7061e04 (00:25/01:00/01:40Z): RED lease + EXECUTED = the measured fail-open era; structurally impossible after 07f9042 (02:16Z)",
+    "watchdog d3e7f93 03:25:32Z: redCount 0 (previous reds 00:45/01:25 self-healed)",
+    "Actions API: run 38996754100 heartbeat=cancelled(30min timeout, beat committed 02:55:17Z before cut), pulse=success 03:40:20 -> dispatched run 38999674953 (in flight, tree cdd60f4)",
+    "git seed history: memory-seed/published.jsonl rows=0 at b44eb75/4859169/9b8238b/784346d, rows=4 at cdd60f4 (post-fix churn committed — harmless under 784346d isolation)"
+   ],
+   "status": "verified-live",
+   "mergedAs": null
+  }
+ ]
 }
