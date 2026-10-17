@@ -1,6 +1,6 @@
 {
  "schema": "saos-9agent-claims@1",
- "updatedAt": "2026-10-17T05:04:06Z",
+ "updatedAt": "2026-10-17T10:42:20Z",
  "rules": {
   "branchNaming": "agent/<agent-id>/<lane>",
   "noDirectMainPush": true,
@@ -177,6 +177,25 @@
    "status": "executed-with-material-correction",
    "executedAt": "2026-10-17T05:04:06Z",
    "outcome": "DAM-RELEASE landed 923ba59 on saos-dex main (branch agent/zai/W1.3, FF). Release-beat f1de244 (04:58:32Z, h420817→h424425, 3600 ticks) — the FIRST beat under floor=0 — consumed the dam: FUEL_FUNDERS (wash is SETTLE-19-c ladder member, floor read at call-time) legally drew the 800,000µ to fund starving workers; workers traded real volume (day 10-17: 1238 fills / 195 swaps, vs 0 fills on 10-15/16) and the gas burned as GAS_TABLE tolls. MATERIAL CORRECTION to my W1.2 estimate: '≈28 beats' assumed famine-rate burn (28,355µ/beat, re-measured on the 04:35 famine beat: Σ 845,185→816,830). Under REAL load the burn is ≈796,602µ/beat (Σ 816,830→20,228 across the release beat) — the dam bought ~1-2 heavy beats of real trading, not 28. Σcredits now 20,228µ: without a structural decision the next beats honestly self-throttle back to famine. Zero external money, zero keys, Σ internal-conserved-except-burn; full trail: commits 923ba59 + f1de244 + hub af23660."
+  },
+  {
+   "repo": "saos-dex + saos-runtime",
+   "lane": "W1.4-git-first-autonomy",
+   "agent": "zai",
+   "branch": "agent/zai/W1.4-git-first (saos-dex) + agent/zai/W1.4-dex-cloud-twin (saos-runtime)",
+   "baseBranch": "main",
+   "baseCommit": "e95bc19 / c10c874",
+   "claimedAt": "2026-10-17T10:42:20Z",
+   "ttlHours": 24,
+   "summary": "OWNER DIRECTIVES EXECUTED: (1) GIT-FIRST LAW — after the measured audit-wipe (audit dir gone, only git survived, cloud kept beating alone 09:06→10:01Z): the dex pacer is now git-resident (deploy/dex-beat-keeper.sh + dex-beat-loop.sh + dex-beat-service/), BOOTSTRAP.sh + RESURRECTION.md one-command stack rebuild in the hub. (2) CLOUD TWIN — saos-runtime workflow dex-beat.yml (R71 hourly :53, R280 self-pulse, cron backstop, git-only standby guard, existing GH_PAT secret — zero new secrets): the chain beats even if every sandbox dies. (3) TOLL-RECALIBRATION ÷100 on the hot path (640cf4f) — measured driver: release-beat burned 796,602µ/beat vs 4.5Mµ recycled in ALL history; doctrine from the code itself ('the real spam guard is structural, not price', Roast-66/EXEC-CD-8/46). RESULT (beat e4bec26 10:40:42Z, first recalibrated beat): ops 1/13 rejected (was 31/31, 65/65), feeMeter 8,000→16,035 (+8,035µ real fees), Σ 12,793→45,820 (+33,027µ — the economy GREW for the first time), flywheel live: trade→fees→meter→recycle→fuel.",
+   "evidence": [
+    "audit-wipe measured: /home/z/audit gone at session start 10:22Z; mini-service (my-project) survived; cloud beats d180fe5/a44bd97/b8c392e/e984948/2288c57 landed without any sandbox",
+    "Σ per commit: e95bc19=12,793 (famine, burn 80µ) → e4bec26=45,820 (first recalibrated beat, +33,027)",
+    "beat output evolution: '31/31 ops rejected' (04:58) → '1/13 ops rejected' (10:40, single no-cross market-logic rejection)",
+    "keeper resurrection fixes measured in fresh clone: bun install missing (silent death), PIPESTATUS rc (tail lies), guard anchored on message pattern not HEAD age (sandbox git identity IS dex-beat[bot] — two false blocks measured)",
+    "commits: 9d0443e git-resident pacer, 457054a bun-install+PIPESTATUS, 640cf4f toll recalibration, 26226b0 guard window, 0ad20f2 guard anchor, e4bec26 verification beat | saos-runtime: 6ba9c38 cloud twin, fb068ab cloud guard fix | hub: BOOTSTRAP+RESURRECTION"
+   ],
+   "status": "executed-verified"
   }
  ]
 }
