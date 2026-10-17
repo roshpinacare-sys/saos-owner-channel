@@ -1,6 +1,6 @@
 {
  "schema": "saos-9agent-claims@1",
- "updatedAt": "2026-10-17T04:15:00Z",
+ "updatedAt": "2026-10-17T04:05:00Z",
  "rules": {
   "branchNaming": "agent/<agent-id>/<lane>",
   "noDirectMainPush": true,
@@ -131,6 +131,24 @@
     "measured race: beat commit vs 30min job timeout (96bfd67 committed 03:25:06Z, job cut 03:25:09Z — 3s margin; this beat ~24min, comfortable) — timeout 30->45 remains a candidate fix pending owner/designated merger (law #1: no direct main)"
    ],
    "status": "verified-live",
+   "mergedAs": null
+  },
+  {
+   "repo": "saos-dex",
+   "lane": "W1.2-dex-beat-pacer",
+   "agent": "zai",
+   "branch": "operational (machine state churn only, dex-beat[bot] identity, FF-only)",
+   "baseCommit": "d0d1895",
+   "claimedAt": "2026-10-17T04:05:00Z",
+   "ttlHours": 24,
+   "summary": "Operational lease: the dex chain froze at h417207 (no beat since 02:45:06Z). Root cause measured: (a) Domain public coordinator dex-beat + ALL 95 Domain workflows are disabled_manually (only pages-build-deployment active) — no cloud cadence; (b) the local dex-beat[bot] runner from the W0.3-b session stopped after 3 beats. Action: restart the canonical local pacer — hourly cloud-beat.ts at :53 per R71 law (3600 heavy ticks), machine-state commits FF-only. No code changes, no keys, no vault, no token work. Gas recovery already landed in production (wash 995,900→800,000µ at the owner floor; arena 20→5,480µ; soldiers+bots funded; honest volume resumed: 223 trades / 2.56M µ on 10-17).",
+   "evidence": [
+    "db/state-snapshot.json @ origin/main: savedAt 02:45:06Z, height 417207, credits wash=800000/arena=5480/treasury=1855 — recovery + honest volume measured (dex-metrics 10-17: trades24=223, vol24QuoteMu=2,559,089)",
+    "Domain Actions API: workflows census 96 total — 95 disabled_manually, 1 active (pages-build-deployment); dex-beat.yml dispatch returns HTTP 422 'disabled workflow'; last successful schedule run 01:32:01Z",
+    "saos-dex Actions: dex-beat run from 10-15 still 'queued' (private billing wall); local /tmp/beat2-4.log: 02:35 famine 65/65 rejected -> 02:38 GAS-RECOVERY +195,900µ -> 02:45 only 2/33 rejected",
+    "cloud-beat.ts header = the canonical law (deterministic ticks, chain-is-home, honest publish skip without CONSOLE_TOKEN)"
+   ],
+   "status": "active",
    "mergedAs": null
   }
  ]
