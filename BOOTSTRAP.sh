@@ -31,6 +31,10 @@ if ! curl -s --max-time 2 "http://127.0.0.1:3044/health" >/dev/null 2>&1; then
   ( cd "$PROJ/mini-services/dex-beat-service" && nohup bun run dev >> /tmp/dex-beat-service.out 2>&1 & )
   sleep 3
 fi
+# [W1.6] the dev script is flock-guarded (cross-process single-instance law,
+# measured 23:18Z: three parallel schedulers, a deleted-file zombie kept the
+# port and served /health with OLD code) — a redundant start above now loses
+# the flock instantly instead of arming a second clock.
 curl -s --max-time 3 "http://127.0.0.1:3044/health" && echo
 
 echo "[bootstrap] 5/5 cloud sovereignty (saos-runtime workflows) is ALREADY alive — verify:"
