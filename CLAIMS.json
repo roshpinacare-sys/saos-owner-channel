@@ -1,6 +1,6 @@
 {
   "schema": "saos-9agent-claims@1",
-  "updatedAt": "2026-10-17T02:45:00Z",
+  "updatedAt": "2026-10-17T03:05:00Z",
   "rules": {
     "branchNaming": "agent/<agent-id>/<lane>",
     "noDirectMainPush": true,
@@ -94,6 +94,22 @@
       "evidence": [
         "files are new at repo root, zero existing files modified"
       ]
+    },
+    {
+      "repo": "saos-dex",
+      "lane": "W0.3-b",
+      "agent": "zai",
+      "branch": "main (direct, engine-verified)",
+      "baseCommit": "042ea98",
+      "claimedAt": "2026-10-17T02:50:00Z",
+      "ttlHours": 24,
+      "summary": "wash decommission completed in the beat + GAS-RECOVERY pre-ticks. MEASURED: wash wallet held 995,900µ of Σ=1,008,792µ credits (98.7%) — the dead machine consumed the exchange's entire gas supply (treasury=22µ, arena=20µ, 100% op rejection). Fix: (1) wash float/gas provisioning gated on WASH_ENABLED; (2) GAS-RECOVERY before the tick loop pulls only the legal band above WASH_FLOOR=800,000µ (owner dam law respected to the µ).",
+      "evidence": [
+        "isolated beat CLOUD_TICKS=180: pull +195,900µ → rejection 100%→8-18%; arena 20→5,480; fills 86,577; feeMeter 8,000; Σ conserved by construction",
+        "tsc clean; probe on live chain API: refuel machinery fires at tick 1 with funded treasury",
+        "pushed as 2320fcff on main; canonical chain advanced h416676→h417198 through honest isolated beat runs (dex-beat[bot] commits, deterministic continuation)"
+      ],
+      "ownerDecisionNeeded": "burn 163.6Kµ/beat vs fee-recycle 8K/beat: without releasing part of the 800K wash reserve (dam law 2026-10-15) the gas economy re-starves within ~5 beats. Options: (a) release wash reserve to X floor, (b) cut GAS_TABLE burn, (c) enlarge mint_fuel — owner's call (dam law requires owner ratification for floor deviations)."
     }
   ]
 }
