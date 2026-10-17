@@ -1,0 +1,92 @@
+{
+  "schema": "saos-9agent-claims@1",
+  "updatedAt": "2026-10-17T02:20:00Z",
+  "rules": {
+    "branchNaming": "agent/<agent-id>/<lane>",
+    "noDirectMainPush": true,
+    "firstClaimWins": true,
+    "ttlHours": 24,
+    "evidenceLaw": "claim without run-evidence is not merged",
+    "irreversibleOps": "owner only, after dry-run review",
+    "identity": "commits signed roshpinacare-sys + [agent-<id>/<lane>] prefix in message"
+  },
+  "claims": [
+    {
+      "repo": "steem",
+      "lane": "W0.1",
+      "agent": "zai",
+      "branch": "agent/zai/W0.1-selftest-chain-gate",
+      "baseBranch": "saos-cockpit",
+      "baseCommit": "b44eb75",
+      "claimedAt": "2026-10-17T02:05:00Z",
+      "ttlHours": 24,
+      "summary": "SELFTEST RED = ZERO CHAIN MOVEMENT: verifySelftestEvidence gate (fail-closed) wired before R245 dex-takeover runCycle + before delegation rail; blocked verdicts stay red in watchdog (not in WAIT set); dexEvidence/delegationEvidence heartbeat fields added",
+      "evidence": [
+        "node --check mini-services/saos-engine/ci-cycle.mjs → OK",
+        "behavior test vs real state files: current evidence=FAIL-RECORDED (fail=1) → gate DISARMED → TAKEOVER-BLOCKED-SELFTEST-RED + DELEGATION-BLOCKED-SELFTEST-RED",
+        "simulated green verdict → SUITE-RAN honest → gate ARMED (self-heals on next beat)"
+      ]
+    },
+    {
+      "repo": "saos-desk",
+      "lane": "W0.2",
+      "agent": "zai",
+      "branch": "agent/zai/W0.2-desk-paper",
+      "baseBranch": "main",
+      "baseCommit": "17f33c8",
+      "claimedAt": "2026-10-17T02:00:00Z",
+      "ttlHours": 24,
+      "summary": "mandate.json execution.mode live→paper, liveOwnerArmed true→false (G2-consistent paper⇒unarmed); reversible by owner re-arm word",
+      "evidence": [
+        "selftest.mjs G2 law verified in code before edit (7.5: paper⇒unarmed)",
+        "diff = exactly 2 fields, no schema change"
+      ]
+    },
+    {
+      "repo": "saos-dex",
+      "lane": "W0.3",
+      "agent": "zai",
+      "branch": "agent/zai/W0.3-dex-wash-ci",
+      "baseBranch": "main",
+      "baseCommit": "c3e2bd3",
+      "claimedAt": "2026-10-17T02:10:00Z",
+      "ttlHours": 24,
+      "summary": "THE-WASH neutralized (WASH_ENABLED=false compile gate, washTick early-exit, replay-deterministic) + ci.yml push trigger fixed ('ain]' never matched → [ main ])",
+      "evidence": [
+        "bun harness/bmc.ts → PASS (8,000 sequences, applies=24,249, B1..B9 hold)",
+        "grids/liquidity-selftest.mjs → 12/12 pass",
+        "grids/params-selftest.mjs → 20/20 pass",
+        "bunx tsc --noEmit → clean"
+      ]
+    },
+    {
+      "repo": "TruthRail",
+      "lane": "W0.4",
+      "agent": "zai",
+      "branch": "agent/zai/W0.4-tr-exposure-yaml",
+      "baseBranch": "main",
+      "baseCommit": "1c83b34",
+      "claimedAt": "2026-10-17T01:58:00Z",
+      "ttlHours": 24,
+      "summary": "exposure-gate.yml push trigger fixed: branches 'ain]' (corrupted selector — gate never ran on any push) → [ main ]",
+      "evidence": [
+        "grep after fix: 'branches: [ main ]'",
+        "single-line diff, no other changes"
+      ]
+    },
+    {
+      "repo": "saos-owner-channel",
+      "lane": "W0-hub",
+      "agent": "zai",
+      "branch": "main",
+      "baseBranch": "main",
+      "baseCommit": "ad35f6c",
+      "claimedAt": "2026-10-17T02:18:00Z",
+      "ttlHours": 24,
+      "summary": "bootstrap-only: COORDINATION.md (9-agent laws + lane map) + CLAIMS.json (lease registry). Additive files; does not touch PROTOCOL.md envelopes",
+      "evidence": [
+        "files are new at repo root, zero existing files modified"
+      ]
+    }
+  ]
+}
