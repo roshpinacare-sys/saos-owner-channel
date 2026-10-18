@@ -28,7 +28,7 @@ jobs:
             RECOVER-ALL.sh \
             AGENT-MANUAL.md \
             RESURRECTION.md \
-            worklog.md \
+            command-center/worklog.md \
             command-center/src/app/page.tsx \
             command-center/src/lib/sovereign.ts \
             command-center/src/app/api/sovereign/route.ts ; do
