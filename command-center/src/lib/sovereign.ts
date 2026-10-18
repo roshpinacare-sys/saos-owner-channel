@@ -298,6 +298,41 @@ export async function fabricQueue(): Promise<FabricQueue> {
   }
 }
 
+// —— שיפוט-התור (W9) ——
+// ניתוח-חי של REVIEW-INDEX-W8.md מהענן: כל-שורת-טבלה = פסק-מדוד. אפס-ספירות-מקודדות —
+// הקובץ-עצמו (שנדחף-ל-dex) הוא-מקור-האמת; האתר-רק-מקריא-אותו.
+export type FabricVerdicts = {
+  rows: number
+  endorse: number
+  endorseFixes: number
+  reject: number
+  endorseFixesIds: string[]
+  indexSource: string
+}
+
+export async function fabricVerdicts(): Promise<FabricVerdicts> {
+  const path = "fabric/REVIEW-INDEX-W8.md"
+  const md = await rawText("saos-dex", path)
+  const v = { rows: 0, endorse: 0, endorseFixes: 0, reject: 0, endorseFixesIds: [] as string[] }
+  for (const line of md.split("\n")) {
+    const m = line.match(/^\|\s*(cmv[a-z0-9]+)\s*\|/)
+    if (!m) continue
+    const cells = line.split("|").slice(1, -1).map((c) => c.trim())
+    const verdict = cells[cells.length - 1] ?? ""
+    v.rows++
+    if (verdict.startsWith("ENDORSE-WITH-FIXES")) {
+      v.endorseFixes++
+      v.endorseFixesIds.push(m[1])
+    } else if (verdict.startsWith("ENDORSE")) v.endorse++
+    else if (verdict.startsWith("REJECT")) v.reject++
+  }
+  // אימות-צורה fail-closed: אם-הקובץ-שונה-וצורתו-נשברה — אין-להציג-ספירה-חלקית-כשיפוט
+  if (v.rows < 40) throw new Error(`רק ${v.rows} שורות-שיפוט התגלו (צפי ≥40) — צורת-האינדקס השתנתה`)
+  if (v.endorse + v.endorseFixes + v.reject !== v.rows)
+    throw new Error(`שורות-לא-מסווגות באינדקס (${v.rows} שורות, מסווגות ${v.endorse + v.endorseFixes + v.reject})`)
+  return { ...v, indexSource: `https://github.com/${ORG}/saos-dex/blob/main/${path}` }
+}
+
 export type IrreversiblesQuote = { found: boolean; quote: string | null; source: string }
 
 export async function irreversiblesQuote(): Promise<IrreversiblesQuote> {

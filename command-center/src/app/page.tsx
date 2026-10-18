@@ -84,6 +84,7 @@ type SovereignData = {
     }
   }
   fabric?: { ok: boolean; error?: string; data?: null | { proposals: number; indexed: number; deepReviewed: number; reviewPaths: string[] } }
+  verdicts?: { ok: boolean; error?: string; data?: null | { rows: number; endorse: number; endorseFixes: number; reject: number; endorseFixesIds: string[]; indexSource: string } }
   irreversibles?: { ok: boolean; error?: string; data?: null | { found: boolean; quote: string | null; source: string } }
 }
 
@@ -638,7 +639,24 @@ export default function Home() {
                   )
                 })()}
                 <div className="text-[10px] leading-relaxed text-zinc-500">
-                  כלום-מהתור-לא-בוצע-אוטומטית — השער-שלך. מפת-השיפוט המלאה (W8): 40 הצעות → 1 נקי (no-op) · 6 ניתנות-תיקון · 32 נדחות-ככתבן · 1 נשפטה-לעומק (W7). ממצא-מבני: התור-עצמו-שבר-את-typecheck-של-dex — תוקן (fabric-הוצא-מ-include).
+                  כלום-מהתור-לא-בוצע-אוטומטית — השער-שלך.
+                  {data.verdicts?.ok && data.verdicts.data ? (
+                    <a href={data.verdicts.data.indexSource} target="_blank" rel="noreferrer" className="transition-colors hover:text-zinc-300">
+                      {' '}מפת-השיפוט החיה: {data.verdicts.data.rows} שורות-פסק → {data.verdicts.data.endorse} נקיות (no-op) ·{' '}
+                      <span className="text-amber-400/90">{data.verdicts.data.endorseFixes} ניתנות-תיקון</span>
+                      {data.verdicts.data.endorseFixesIds.length > 0 && (
+                        <span dir="ltr" className="font-mono text-[9px] text-amber-400/70">
+                          {' '}({data.verdicts.data.endorseFixesIds.join(', ')}){' '}
+                        </span>
+                      )}
+                      · {data.verdicts.data.reject} נדחות-ככתבן · 1 נשפטה-לעומק (W7).
+                    </a>
+                  ) : (
+                    <span className="text-zinc-500">
+                      {' '}מפת-השיפוט: 49 שורות-פסק → 1 נקי · 6 ניתנות-תיקון · 42 נדחות-ככתבן · 1 עומק (W7){data.verdicts && !data.verdicts.ok ? ` — חי: ${data.verdicts.error}` : ''}.
+                    </span>
+                  )}
+                  {' '}ממצא-מבני: התור-עצמו-שבר-את-typecheck-של-dex — תוקן (fabric-הוצא-מ-include). הגל-השני (W9): 9 הצעות-חדשות נשפטו-כולן — התור-צמח-בזמן-השיפוט (45→49) והמפה-השלימה-אותו.
                 </div>
               </div>
             </Panel>
