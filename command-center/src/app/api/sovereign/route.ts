@@ -7,6 +7,7 @@ import {
   recoveryAssets,
   secretSweep,
   signingHealth,
+  enginePulse,
   ORGAN_NAMES,
   ORGAN_FRESHNESS_SEC,
   type Snapshot,
@@ -63,7 +64,7 @@ export async function GET() {
     return NextResponse.json(g.__sovCache.payload)
   }
 
-  const [snapP, armyP, volP, klinesP, makersP, gridP, runsP, claimsP, digestP, policiesP, feedP, recoveryP, sweepP, signingP] = await Promise.all([
+  const [snapP, armyP, volP, klinesP, makersP, gridP, runsP, claimsP, digestP, policiesP, feedP, recoveryP, sweepP, signingP, engineP] = await Promise.all([
     panel(rawFile("saos-dex", "db/state-snapshot.json").then((j) => j as Snapshot), "state-snapshot"),
     panel(rawFile("saos-dex", "grids/state/army-public.json").then((j) => j as ArmyPublic), "army-public"),
     panel(rawFile("saos-dex", "grids/state/volume-verify.json").then((j) => j as VolumeVerify), "volume-verify"),
@@ -79,10 +80,10 @@ export async function GET() {
     panel(rawFile("saos-owner-channel", "CLAIMS.json"), "hub-claims"),
     panel(rawFile("FleetHQ", "digest.json", "office-pages"), "office-digest"),
     panel(rawFile("saos-dex", "grids/state/policy-gears.json"), "policy-gears"),
-    // יומן-הריבונות: commit-ים אחרונים מ-4-הריפואים — ה-commit הוא הקבלה
+    // יומן-הריבונות: commit-ים אחרונים מ-5-הריפואים — ה-commit הוא הקבלה
     panel(
       Promise.all(
-        (["saos-dex", "saos-runtime", "saos-owner-channel", "FleetHQ"] as const).map((r) => repoCommits(r, 10)),
+        (["saos-dex", "saos-runtime", "saos-owner-channel", "FleetHQ", "steem"] as const).map((r) => repoCommits(r, 10)),
       ).then((lists) => {
         // מיון-כרונולוגי + תקרת-גיוון: ≤6 לכל-ריפו — שריפו-רועש (pacemaker) לא יציף את הקיר
         const all = lists.flat().sort((a, b) => (b.at ?? "").localeCompare(a.at ?? ""))
@@ -105,6 +106,8 @@ export async function GET() {
     panel(secretSweep(), "secret-sweep"),
     // יד-החתימה: המד-האמיתי (G1..G4 מול-השרשרת) — חי ב-runtime, שעתי :43
     panel(signingHealth(), "signing-health"),
+    // פעימת-יד-המנוע: המחזור-האמיתי-האחרון (SENSE→DECIDE→ACT→RECORD)
+    panel(enginePulse(), "engine-pulse"),
   ])
 
   // קבלות-צבא: 8 השורות האחרונות מה-jsonl
@@ -209,6 +212,7 @@ export async function GET() {
     recovery: recoveryP,
     secrets: sweepP,
     signing: signingP,
+    engine: engineP,
   }
 
   g.__sovCache = { at: Date.now(), payload }

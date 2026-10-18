@@ -228,6 +228,31 @@ export async function signingHealth(): Promise<SigningHealth> {
   }
 }
 
+// —— פעימת-יד-המנוע (W5-γ) ——
+// הגשר (steem-hand-revival ב-runtime) = האיבר-היחיד-עם-אפקט-אמיתי:
+// מחזור doctrine-capped (SENSE→DECIDE→ACT→RECORD) — curate מצביע, execute כפוף
+// לשערי-המנוע. האתר מציג-את-פסק-הריצה-האחרון — היכן-שהוא-לא-צריך-להיות-חבוי.
+export type EnginePulse = {
+  conclusion: "success" | "failure" | "running" | "unknown"
+  event: string | null
+  at: string | null
+  url: string | null
+}
+
+export async function enginePulse(): Promise<EnginePulse> {
+  try {
+    const d = await ghApi<{ workflow_runs: Array<{ conclusion: string | null; event: string; created_at: string | null; html_url: string }> }>(
+      `/repos/${ORG}/saos-runtime/actions/workflows/steem-hand-revival.yml/runs?per_page=1`,
+    )
+    const r = d.workflow_runs?.[0]
+    if (!r) return { conclusion: "unknown", event: null, at: null, url: null }
+    const c = r.conclusion === "success" ? "success" : r.conclusion === "failure" ? "failure" : r.conclusion === null ? "running" : "unknown"
+    return { conclusion: c, event: r.event, at: r.created_at, url: r.html_url ?? null }
+  } catch {
+    return { conclusion: "unknown", event: null, at: null, url: null }
+  }
+}
+
 // אפס-סודות בענן (חוק-מפתח של ה-owner): סריקת שורש ה-hub + command-center —
 // אסורים: pat.env/.env*/מפתחות/קרדנשלים/tokens. היסטוריית my-project המקומית מעולם לא יצאה מהמכונה.
 const SECRET_RX = /^(pat\.env|\.env(\..+)?|.*\.pem|id_rsa.*|id_ed25519.*|.*credentials.*|.*token\.(env|txt|key))$/i

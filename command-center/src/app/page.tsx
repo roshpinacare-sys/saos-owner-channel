@@ -67,6 +67,7 @@ type SovereignData = {
   recovery?: { ok: boolean; error?: string; data?: Array<{ path: string; exists: boolean; sha: string | null; lastAt: string | null; msg: string | null; url: string | null }> }
   secrets?: { ok: boolean; error?: string; data?: { clean: boolean; suspects: string[]; scanned: string[] } }
   signing?: { ok: boolean; error?: string; data?: { conclusion: 'success' | 'failure' | 'unknown'; startedAt: string | null; url: string | null } }
+  engine?: { ok: boolean; error?: string; data?: { conclusion: 'success' | 'failure' | 'running' | 'unknown'; event: string | null; at: string | null; url: string | null } }
 }
 
 const fmtMu = (mu: number | null | undefined): string =>
@@ -579,6 +580,30 @@ export default function Home() {
                 ) : null}
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-2">
+                {data.engine?.ok && data.engine.data ? (
+                  <a
+                    href={data.engine.data.url ?? 'https://github.com/roshpinacare-sys/saos-runtime/actions/workflows/steem-hand-revival.yml'}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`rounded px-2 py-1 text-[10px] font-bold transition hover:opacity-80 ${
+                      data.engine.data.conclusion === 'success'
+                        ? 'bg-emerald-900/50 text-emerald-300'
+                        : data.engine.data.conclusion === 'failure'
+                          ? 'bg-rose-900/60 text-rose-200'
+                          : 'bg-amber-900/40 text-amber-300'
+                    }`}
+                  >
+                    {data.engine.data.conclusion === 'success'
+                      ? '✓ יד-המנוע: מחזור דוקטרינה שלם (SENSE→DECIDE→ACT→RECORD)'
+                      : data.engine.data.conclusion === 'running'
+                        ? 'יד-המנוע: מחזור בעיצומו'
+                        : data.engine.data.conclusion === 'failure'
+                          ? '✗ יד-המנוע: הריצה האחרונה נכשלה — fail-honest'
+                          : 'יד-המנוע: אין מדידה'}
+                  </a>
+                ) : (
+                  <span className="rounded bg-zinc-800 px-2 py-1 text-[10px] text-zinc-400">יד-המנוע: {data.engine?.error ?? 'לא זמין'}</span>
+                )}
                 {data.signing?.ok && data.signing.data ? (
                   <a
                     href={data.signing.data.url ?? 'https://github.com/roshpinacare-sys/saos-runtime/actions/workflows/signing-health.yml'}
