@@ -83,7 +83,7 @@ type SovereignData = {
       authorityEnvelope?: { execute?: string[]; gates?: string[] }
     }
   }
-  fabric?: { ok: boolean; error?: string; data?: null | { proposals: number; reviewed: number; reviewPaths: string[] } }
+  fabric?: { ok: boolean; error?: string; data?: null | { proposals: number; indexed: number; deepReviewed: number; reviewPaths: string[] } }
   irreversibles?: { ok: boolean; error?: string; data?: null | { found: boolean; quote: string | null; source: string } }
 }
 
@@ -578,8 +578,17 @@ export default function Home() {
                   >
                     <span className="text-zinc-300">הצעות-למידה אוטונומית (fabric/saos-dex)</span>
                     <span className="font-mono">
-                      <span className={data.fabric.data.reviewed < data.fabric.data.proposals ? 'text-amber-300' : 'text-emerald-400'}>
-                        {data.fabric.data.proposals} בתור · {data.fabric.data.reviewed} נשפטו
+                      <span
+                        className={
+                          data.fabric.data.indexed > 0 && data.fabric.data.deepReviewed > 0
+                            ? 'text-emerald-400'
+                            : data.fabric.data.indexed > 0
+                              ? 'text-teal-300'
+                              : 'text-amber-300'
+                        }
+                      >
+                        {data.fabric.data.proposals} בתור · ממופים {data.fabric.data.indexed} · נשפטו-לעומק{' '}
+                        {data.fabric.data.deepReviewed}
                       </span>
                     </span>
                   </a>
@@ -629,7 +638,7 @@ export default function Home() {
                   )
                 })()}
                 <div className="text-[10px] leading-relaxed text-zinc-500">
-                  כלום-מהתור-לא-בוצע-אוטומטית — השער-שלך. השיפוט-העזר האחרון: fabric cmvdxs6w → REJECTED-AS-WRITTEN · IDEA-ENDORSED (4 חוסמים מדודים, גרסה-מתוקנת-מוצעת ב-review).
+                  כלום-מהתור-לא-בוצע-אוטומטית — השער-שלך. מפת-השיפוט המלאה (W8): 40 הצעות → 1 נקי (no-op) · 6 ניתנות-תיקון · 32 נדחות-ככתבן · 1 נשפטה-לעומק (W7). ממצא-מבני: התור-עצמו-שבר-את-typecheck-של-dex — תוקן (fabric-הוצא-מ-include).
                 </div>
               </div>
             </Panel>

@@ -273,7 +273,8 @@ export async function sovereignDecisions(): Promise<SovereignDecisions> {
 // (3) החלטות-חמושות-מותנות מקובץ-המוח — מחושב-צד-לקוח מהנתונים-שכבר-נשלפו.
 export type FabricQueue = {
   proposals: number
-  reviewed: number
+  indexed: number
+  deepReviewed: number
   reviewPaths: string[]
 }
 
@@ -282,13 +283,19 @@ export async function fabricQueue(): Promise<FabricQueue> {
     `/repos/${ORG}/saos-dex/git/trees/main`,
   )
   const fabric = (root.tree ?? []).find((e) => e.type === "tree" && e.path === "fabric")
-  if (!fabric) return { proposals: 0, reviewed: 0, reviewPaths: [] }
+  if (!fabric) return { proposals: 0, indexed: 0, deepReviewed: 0, reviewPaths: [] }
   const t = await ghApi<{ tree: Array<{ path: string; type: string }> }>(
     `/repos/${ORG}/saos-dex/git/trees/${fabric.sha}?recursive=1`,
   )
   const dirs = new Set(t.tree.map((e) => e.path.split("/")[0]).filter((p) => p && !p.includes(".")))
-  const reviews = t.tree.filter((e) => e.type === "blob" && /REVIEW/i.test(e.path.split("/").pop() ?? ""))
-  return { proposals: dirs.size, reviewed: reviews.length, reviewPaths: reviews.map((r) => r.path).slice(0, 10) }
+  const indexes = t.tree.filter((e) => e.type === "blob" && /REVIEW-INDEX/i.test(e.path.split("/").pop() ?? ""))
+  const deep = t.tree.filter((e) => e.type === "blob" && /REVIEW/i.test(e.path.split("/").pop() ?? "") && !/REVIEW-INDEX/i.test(e.path))
+  return {
+    proposals: dirs.size,
+    indexed: indexes.length,
+    deepReviewed: deep.length,
+    reviewPaths: deep.map((r) => r.path).slice(0, 10),
+  }
 }
 
 export type IrreversiblesQuote = { found: boolean; quote: string | null; source: string }
