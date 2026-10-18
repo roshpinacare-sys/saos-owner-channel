@@ -85,6 +85,7 @@ type SovereignData = {
   }
   fabric?: { ok: boolean; error?: string; data?: null | { proposals: number; indexed: number; deepReviewed: number; reviewPaths: string[] } }
   verdicts?: { ok: boolean; error?: string; data?: null | { rows: number; endorse: number; endorseFixes: number; reject: number; endorseFixesIds: string[]; indexSource: string } }
+  alerts?: { ok: boolean; error?: string; data?: null | { count: number; recent: Array<{ event_type: string; at: string; service_id: string; url_hint: string; received_at?: string }> } }
   irreversibles?: { ok: boolean; error?: string; data?: null | { found: boolean; quote: string | null; source: string } }
 }
 
@@ -596,6 +597,21 @@ export default function Home() {
                 ) : (
                   <div className="rounded bg-black/30 px-2 py-1.5 text-rose-400/80">fabric: {data.fabric?.error ?? 'אין נתונים'}</div>
                 )}
+                {data.alerts?.ok && data.alerts.data ? (
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded bg-black/30 px-2.5 py-1.5">
+                    <span className="text-xs text-zinc-300">
+                      מקלט-ההתראות /api/alerts{' '}
+                      <span className="text-[10px] text-zinc-500">(W10 · לא-מאומת — למנוע אין סוד משותף, צורה מחמירה + מדידת-קצב)</span>
+                    </span>
+                    {data.alerts.data.count > 0 ? (
+                      <span className="text-[11px] text-amber-400">
+                        {data.alerts.data.count} אירועים · אחרון: {data.alerts.data.recent[data.alerts.data.recent.length - 1]?.event_type ?? '—'}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-emerald-400">שקט — אפס-אירועי-guard</span>
+                    )}
+                  </div>
+                ) : null}
                 {data.irreversibles?.ok && data.irreversibles.data?.quote ? (
                   <a
                     href={data.irreversibles.data.source}

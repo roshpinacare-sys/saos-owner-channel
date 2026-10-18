@@ -11,6 +11,7 @@ import {
   sovereignDecisions,
   fabricQueue,
   fabricVerdicts,
+  localAlerts,
   irreversiblesQuote,
   ORGAN_NAMES,
   ORGAN_FRESHNESS_SEC,
@@ -68,7 +69,7 @@ export async function GET() {
     return NextResponse.json(g.__sovCache.payload)
   }
 
-  const [snapP, armyP, volP, klinesP, makersP, gridP, runsP, claimsP, digestP, policiesP, feedP, recoveryP, sweepP, signingP, engineP, decisionsP, fabricP, verdictsP, irrevP] = await Promise.all([
+  const [snapP, armyP, volP, klinesP, makersP, gridP, runsP, claimsP, digestP, policiesP, feedP, recoveryP, sweepP, signingP, engineP, decisionsP, fabricP, verdictsP, alertsP, irrevP] = await Promise.all([
     panel(rawFile("saos-dex", "db/state-snapshot.json").then((j) => j as Snapshot), "state-snapshot"),
     panel(rawFile("saos-dex", "grids/state/army-public.json").then((j) => j as ArmyPublic), "army-public"),
     panel(rawFile("saos-dex", "grids/state/volume-verify.json").then((j) => j as VolumeVerify), "volume-verify"),
@@ -117,6 +118,7 @@ export async function GET() {
     // תור-האשרורים: הצעות-fabric + הבלתי-הפיכים — מה-מחכה-להחלטת-הבעלים
     panel(fabricQueue(), "fabric-queue"),
     panel(fabricVerdicts(), "fabric-verdicts"),
+    panel(localAlerts(), "local-alerts"),
     panel(irreversiblesQuote(), "irreversibles"),
   ])
 
@@ -226,6 +228,7 @@ export async function GET() {
     decisions: decisionsP,
     fabric: fabricP,
     verdicts: verdictsP,
+    alerts: alertsP,
     irreversibles: irrevP,
   }
 

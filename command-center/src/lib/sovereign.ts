@@ -333,6 +333,33 @@ export async function fabricVerdicts(): Promise<FabricVerdicts> {
   return { ...v, indexSource: `https://github.com/${ORG}/saos-dex/blob/main/${path}` }
 }
 
+// —— מקלט-ההתראות המקומי (W10) ——
+// ledger-ההתראות-של-/api/alerts — נקרא-מהדיסק-המקומי; שקט-הוא-מצב-לגיטימי; fail-open.
+export type LocalAlerts = {
+  count: number
+  recent: Array<{ event_type: string; at: string; service_id: string; url_hint: string; received_at?: string }>
+}
+
+export async function localAlerts(): Promise<LocalAlerts> {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require("fs") as { existsSync: (p: string) => boolean; readFileSync: (p: string, enc: string) => string }
+    const p = "/home/z/my-project/db/alerts.jsonl"
+    if (!fs.existsSync(p)) return { count: 0, recent: [] }
+    const lines = fs.readFileSync(p, "utf8").trim().split("\n").filter(Boolean)
+    const recent = lines.slice(-5).map((l: string) => {
+      try {
+        return JSON.parse(l) as LocalAlerts["recent"][number]
+      } catch {
+        return { event_type: "(unparseable)", at: "", service_id: "", url_hint: "" }
+      }
+    })
+    return { count: lines.length, recent }
+  } catch {
+    return { count: 0, recent: [] }
+  }
+}
+
 export type IrreversiblesQuote = { found: boolean; quote: string | null; source: string }
 
 export async function irreversiblesQuote(): Promise<IrreversiblesQuote> {
