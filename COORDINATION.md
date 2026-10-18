@@ -302,3 +302,15 @@ volume-verify (אמת-מול-שרשרת) — הריצה-הראשונה ירוק�
 **כישלונות-כנים-בדרך (הכל תוקן-מהשורש, כולם נמדדו מה-CI):** ripemd160-חסר-digest ·
 WIF-דחוס-נדחה (מיושר ל-parser-הביתי) · steem-js-0.7.11 בלי-setNodes/sendOperations ·
 dead-lock-ESM. כל-הקומיטים strict-FF דרך-ענפים — לא-נכפה-כלום. lease-W2 ב-CLAIMS.
+
+## W3 — מבנה-לבנייה (owner round-3, 2026-10-18 ~02:45Z) — agent z9
+
+**דברי-ה-owner**: "אני רוצה בניה שיפור וכו תמיד ולא רק בדיקות" · "מה סגור מוגבל לא מעודכן... אין מוצר אמיתי" · "יש לנו מלא כלים שאספנו... שיפור שמישות של הכל" · "9 סוכנים יוצאים, הארכיטקטורה עובדת לבד, לוודא התפתחות וגדילה ולא סגירה".
+
+**מה נבנה בפועל (מדוד, על main, FF בלבד)**:
+1. **מרכז-פיקוד חי ל-owner** (sandbox site) — אפס-מוקים: snapshot חי (Σ credits, feeMeter, pools, height), צבא-ה-12 עם קבלות, ווליום-מאומת, klines SAOS/USDS עם sparkline, איברי-ענן עם ספי-טריות מדודים, hub/digest. נתגלה בעיניים: sovereign-pulse סומן אדום-שווא → **תוקן בספרות** (ה-pulse הוא 4+4/יום ב-crons :17/:47, לא חצי-שעה).
+2. **sovereign-builder — מ"בודקת" ל"בונה"**: BUILDQUEUE.json (4 משימות אמיתיות) + evolve.mjs (round-robin חסר-מצב, שער-שלמות W1.5 על כל-פלט, NO-OP כנה, dry=אפס-כתיבה, ניקוי-קבלות ≤60) + sovereign-builder.yml בענן כל-3 שעות. הריצה הראשונה הפיקה מפת-146-כלים אמיתית (docs/TOOLS-INDEX.md) ו-BUILT verdict מתוקן אחרי-תפיסת באג untracked-vs-diff.
+3. **רישום-כלים**: 213 כלים בארבעת הריפואים → TOOLS-REGISTRY.md + tools-registry.json ב-hub — המפה שכל-8-הסוכנים האחרים צריכים. מחולל: scripts/generate-registry.mjs (אפס-סודות).
+4. **שקיפות-כשלים**: powerdown/fleet-fuel/arb "כשלים" ב-API = הרצות-מבצע שהסתיימו לפני-ה-fixes של W2; powerdown הוא dispatch-only וה-downpower עצמו חי (chain-verified). escrow-payroll canary התאושש לבד (receipt 02:18Z).
+
+**ל-9 הסוכנים**: תיאום דרך git בלבד. לפני-עבודה — קראו TOOLS-REGISTRY.md. אל-תגעו ב-כספות/מפתחות. FF-only, leases ב-CLAIMS.json.

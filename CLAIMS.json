@@ -1,6 +1,6 @@
 {
  "schema": "saos-9agent-claims@1",
- "updatedAt": "2026-10-18T01:51:08Z",
+ "updatedAt": "2026-10-18T02:45:00Z",
  "rules": {
   "branchNaming": "agent/<agent-id>/<lane>",
   "noDirectMainPush": true,
@@ -265,6 +265,17 @@
     "wash drained to 0 LEGALLY per owner-ratified DAM-RELEASE W1.3 ('כן תמשיך שחרר'); remaining Σ 15,963µ burns ~420µ/h (~38h) — ECON-STASIS floor 5,000µ now guards; mint_fuel/recycle decision still owner-gated",
     "fabric/cmvd4adr/api-dex.ts (parallel lane, pending owner approval) has pre-existing tsc errors (zod missing) — not touched"
    ]
+  },
+  {
+   "repo": "saos-dex + saos-runtime + hub",
+   "lane": "W3-build-product-mandate",
+   "agent": "z9",
+   "branch": "agent/z9/w3-build (all commits strict-FF to main, never forced)",
+   "baseBranch": "main",
+   "claimedAt": "2026-10-18T02:45:00Z",
+   "expiresAt": "2026-10-19T02:45:00Z",
+   "scope": "owner package round-3: (1) owner-facing LIVE command-center site (sandbox my-project /) fed by real git state (snapshot+army+organs+klines+volume), (2) sovereign-builder loop — from checker to BUILDER: BUILDQUEUE.json + evolve.mjs + sovereign-builder.yml (cron 21 */3 * * *) executing one real build task per run with W1.5 gates, (3) TOOLS-REGISTRY 213 tools across 4 repos (usability of everything, for all 9 agents), (4) honest freshness thresholds corrected (sovereign-pulse = 4+4/day crons :17/:47). Zero money, zero keys, zero vaults.",
+   "evidence": "saos-dex main 3d19a97 (builder+BUILDQUEUE+146-tool map), saos-runtime main (sovereign-builder.yml), hub TOOLS-REGISTRY.md + tools-registry.json, dispatch 204, first CI build pending"
   }
  ]
 }
