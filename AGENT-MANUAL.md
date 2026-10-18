@@ -61,7 +61,7 @@ PAT="$TOKEN" bash /home/z/audit/saos-owner-channel/RECOVER-ALL.sh --check   # כ
 
 | שומר | ריפו | קצב | מה הוא עושה |
 |---|---|---|---|
-| `arsenal-sentinel` (W4-G) | saos-owner-channel | 6 שע׳ | כלי-הארסנל קיימים על main + אפס-סודות |
+| `arsenal-sentinel` (W4-G) | saos-runtime | 6 שע׳ | כלי-הארסנל קיימים ב-hub + אפס-סודות + ביטי-הרצה |
 | `organ-guardian` (W4-F) | FleetHQ | שעה | איברים שנוטרלו בשקט — מחזיר |
 | `builder-catchup` (W4-C) | saos-runtime | שעה | builder לא-רץ 3.6ש׳ → מעיר |
 | `grid-watchdog` | saos-runtime | 90 דק׳ | דופק-ירוק/אדום על-הלופים |

@@ -585,3 +585,7 @@ Stage Summary:
 - The organism survived its 3rd resurrection test — and this time the REVIVAL ITSELF was automated end-to-end by one command (RECOVER-ALL.sh), with the site itself now proving the arsenal exists (מגן-השרידות panel) and a cloud sentinel failing loudly if any tool or the zero-secrets law breaks.
 - FleetHQ-clone gap closed at the source; stale-snapshot risk documented in AGENT-MANUAL (truth hierarchy §0: when disk disagrees with cloud, disk is wrong).
 - Owner still owes nothing; next autonomous milestones: watch arsenal-sentinel first run (dispatched), builder-catchup 12:21Z beat, organ-guardian hourly.
+
+### W4-G addendum (measurements after the initial push)
+- arsenal-sentinel proven HONEST three times in the cloud before it ever went green: run#1 caught root-worklog.md (never existed), run#3 caught BOOTSTRAP.sh mode 100644 (lost +x) — both real, both fixed (447904d, f0473cb). A new workflow on saos-owner-channel startup-fails in 1s with 0 steps (measured runs #1-#3, annotations 403 on fine-grained PAT) → sentinel relocated to saos-runtime (proven Actions home, GH_PAT secret already there) checking the hub via checkout → run#4 SUCCESS 12:03:14Z (94dbaa0).
+- API arsenal panel measured one GitHub edge-consistency artifact: freshly-pushed paths reported MISSING for ~45s — fail-closed display kept, documented here.
