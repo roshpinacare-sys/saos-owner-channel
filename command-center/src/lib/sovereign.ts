@@ -167,7 +167,7 @@ export const ARSENAL_PATHS = [
   "AGENT-MANUAL.md",
   "RESURRECTION.md",
   "command-center/src/app/page.tsx",
-  "worklog.md",
+  "command-center/worklog.md",
 ] as const
 
 export async function recoveryAssets(): Promise<RecoveryAsset[]> {
