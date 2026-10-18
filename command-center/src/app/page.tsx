@@ -83,6 +83,8 @@ type SovereignData = {
       authorityEnvelope?: { execute?: string[]; gates?: string[] }
     }
   }
+  fabric?: { ok: boolean; error?: string; data?: null | { proposals: number; reviewed: number; reviewPaths: string[] } }
+  irreversibles?: { ok: boolean; error?: string; data?: null | { found: boolean; quote: string | null; source: string } }
 }
 
 const fmtMu = (mu: number | null | undefined): string =>
@@ -562,6 +564,74 @@ export default function Home() {
               ) : (
                 <div className="text-xs text-rose-400">המוח מנותק: {data.decisions?.error ?? 'אין נתונים'}</div>
               )}
+            </Panel>
+
+            {/* תור-הבעלים — מה-מחכה-להחלטתך (W7) */}
+            <Panel title="תור-הבעלים · ממתין-להחלטתך" sub="אפס-ביצוע-בלעדיך · הצגה-בלבד">
+              <div className="space-y-2 text-[11px]">
+                {data.fabric?.ok && data.fabric.data ? (
+                  <a
+                    href="https://github.com/roshpinacare-sys/saos-dex/tree/main/fabric"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between rounded bg-black/30 px-2 py-1.5 transition hover:bg-emerald-950/40"
+                  >
+                    <span className="text-zinc-300">הצעות-למידה אוטונומית (fabric/saos-dex)</span>
+                    <span className="font-mono">
+                      <span className={data.fabric.data.reviewed < data.fabric.data.proposals ? 'text-amber-300' : 'text-emerald-400'}>
+                        {data.fabric.data.proposals} בתור · {data.fabric.data.reviewed} נשפטו
+                      </span>
+                    </span>
+                  </a>
+                ) : (
+                  <div className="rounded bg-black/30 px-2 py-1.5 text-rose-400/80">fabric: {data.fabric?.error ?? 'אין נתונים'}</div>
+                )}
+                {data.irreversibles?.ok && data.irreversibles.data?.quote ? (
+                  <a
+                    href={data.irreversibles.data.source}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block rounded bg-black/30 px-2 py-1.5 transition hover:bg-emerald-950/40"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">בלתי-הפיכים — חוק-הבעלים עומד</span>
+                      <span className="font-mono text-amber-300">
+                        {Math.max(1, (data.irreversibles.data.quote.match(/·/g) ?? []).length + 1)} בתור
+                      </span>
+                    </div>
+                    <div className="mt-1 truncate text-[10px] text-zinc-500" title={data.irreversibles.data.quote}>
+                      {data.irreversibles.data.quote.slice(0, 160)}…
+                    </div>
+                  </a>
+                ) : (
+                  <div className="rounded bg-black/30 px-2 py-1.5 text-rose-400/80">
+                    בלתי-הפיכים: {data.irreversibles?.error ?? (data.irreversibles?.data && !data.irreversibles.data.found ? 'המקטע-לא-נמצא-בתוכנית' : 'אין נתונים')}
+                  </div>
+                )}
+                {(() => {
+                  const armed = (data.decisions?.data?.decisions ?? []).filter((d) => (d.status ?? '').startsWith('armed'))
+                  if (!armed.length) return null
+                  return (
+                    <div className="rounded bg-black/30 px-2 py-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-zinc-300">החלטות-המוח החמושות-מותנות</span>
+                        <span className="font-mono text-amber-300">{armed.length} חמושות</span>
+                      </div>
+                      <div className="mt-1 space-y-0.5">
+                        {armed.map((d) => (
+                          <div key={d.id} className="flex items-center gap-2 text-[10px]">
+                            <span className="font-mono text-zinc-500" dir="ltr">{d.id}</span>
+                            <span className="truncate text-amber-200/90">{d.title ?? d.id}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
+                <div className="text-[10px] leading-relaxed text-zinc-500">
+                  כלום-מהתור-לא-בוצע-אוטומטית — השער-שלך. השיפוט-העזר האחרון: fabric cmvdxs6w → REJECTED-AS-WRITTEN · IDEA-ENDORSED (4 חוסמים מדודים, גרסה-מתוקנת-מוצעת ב-review).
+                </div>
+              </div>
             </Panel>
 
             {/* איברי-ענן מלאים */}

@@ -267,6 +267,44 @@ export async function sovereignDecisions(): Promise<SovereignDecisions> {
   return j
 }
 
+// —— תור-האשרורים (W7): מה-מחכה-להחלטת-הבעלים ——
+// שלושה-מקורות-אמת: (1) fabric/saos-dex — הצעות-הלמידה-האוטונומית וכמה-נשפטו;
+// (2) תוכנית-הערך ב-outbox ה-hub — הבלתי-הפיכים-הממתינים-לחתימה;
+// (3) החלטות-חמושות-מותנות מקובץ-המוח — מחושב-צד-לקוח מהנתונים-שכבר-נשלפו.
+export type FabricQueue = {
+  proposals: number
+  reviewed: number
+  reviewPaths: string[]
+}
+
+export async function fabricQueue(): Promise<FabricQueue> {
+  const root = await ghApi<{ tree: Array<{ path: string; type: string; sha: string }> }>(
+    `/repos/${ORG}/saos-dex/git/trees/main`,
+  )
+  const fabric = (root.tree ?? []).find((e) => e.type === "tree" && e.path === "fabric")
+  if (!fabric) return { proposals: 0, reviewed: 0, reviewPaths: [] }
+  const t = await ghApi<{ tree: Array<{ path: string; type: string }> }>(
+    `/repos/${ORG}/saos-dex/git/trees/${fabric.sha}?recursive=1`,
+  )
+  const dirs = new Set(t.tree.map((e) => e.path.split("/")[0]).filter((p) => p && !p.includes(".")))
+  const reviews = t.tree.filter((e) => e.type === "blob" && /REVIEW/i.test(e.path.split("/").pop() ?? ""))
+  return { proposals: dirs.size, reviewed: reviews.length, reviewPaths: reviews.map((r) => r.path).slice(0, 10) }
+}
+
+export type IrreversiblesQuote = { found: boolean; quote: string | null; source: string }
+
+export async function irreversiblesQuote(): Promise<IrreversiblesQuote> {
+  const path = "outbox/W5-VALUE-PLAN-2026-10-18.md"
+  const t = await rawText("saos-owner-channel", path)
+  const flat = t.replace(/\s+/g, " ")
+  const i = flat.indexOf("נותרים-בתור-החתימה")
+  return {
+    found: i >= 0,
+    quote: i >= 0 ? flat.slice(i, i + 320) : null,
+    source: `https://github.com/${ORG}/saos-owner-channel/blob/main/${path}`,
+  }
+}
+
 // —— פעימת-יד-המנוע (W5-γ) ——
 // הגשר (steem-hand-revival ב-runtime) = האיבר-היחיד-עם-אפקט-אמיתי:
 // מחזור doctrine-capped (SENSE→DECIDE→ACT→RECORD) — curate מצביע, execute כפוף

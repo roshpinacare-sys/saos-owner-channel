@@ -673,3 +673,19 @@ Stage Summary:
 - The owner's console now shows the organism's brain: every autonomous decision (with its status, area, and reasoning on hover) — nothing decides in the dark. SOV-POLICY/1 surfaces the governance principle, the advisory authority envelope (5 execute lanes, 3 hard gates), and live sense freshness.
 - Receipts wall visually complete for all 5 repos. Site remains zero-mock, fail-closed: brain disconnected = visible red.
 - Cloud clock verified independently: FleetHQ decide cycle rewrites state every ~30min; runtime/runtime-host probes hourly; agent-9 beats alive on saos-cockpit.
+---
+Task ID: W7
+Agent: zai-code (main instance)
+Task: owner — "תמשיך" (continuation after W6; the ratification-judiciary round).
+
+Work Log:
+- Life-check green (dev:3000=200); synced: saos-dex +1 (UNUSUAL foreign push), FleetHQ +11, steem +2 (agent-5 T-529 pattern briefs: claude-plugins-official absorption + auto-reconcile).
+- DISCOVERY: the fabric learning system filed its first proposal gated "ממתין לאישור-בעלים" — fabric/cmvdxs6w (saos-dex db.ts alert layer on top of the LIVE Roast-68 scope-guard). Measured review: REJECTED-AS-WRITTEN · IDEA-ENDORSED — 4 blockers: (1) console.error missing "(" — does not compile; (2) claimed "hash" is base64 prefix = trivially reversible, leaks URL head (potential user:pass) — violates the zero-secrets law; (3) AbortController.prototype.signal misuse → AbortSignal.timeout; (4) TARGET AMBIGUITY — file named for the control-center but written for the dex engine; pasting per filename would BRICK the console (guard throws on import since console's DATABASE_URL is custom.db).
+- JUDICIARY ESTABLISHED: REVIEW-W7.md published next to the proposal (saos-dex, c2d8dc5) with a corrected patch attached for one-glance ratification (sha256 12-hex digest, real timeout, void-IIFE alert fail-open while the guard throw stays fail-closed, target clarified to saos-dex src/lib/db.ts only). Hub outbox pointer added (1f7f8ab) — owner gate UNTOUCHED; advisory only.
+- SITE (owner-queue panel): "תור-הבעלים · ממתין-להחלטתך" — three truth sources: (a) fabricQueue() via 2 git-tree API calls: 37 proposals in queue · 1 reviewed (measured; found+fixed two shape bugs in my own reader: trees-API returns {tree:[...]} with path not name); (b) irreversiblesQuote() — live extraction from W5-VALUE-PLAN outbox: "ניקוי-היסטוריה R11 · איחוד 40→8 · FleetHQ-פרטי" with count derived from the quote itself (no hardcoding); (c) armed-conditional decisions (D3b, D6) computed client-side from brain data. Panel explicitly states: nothing in the queue executes automatically — the gate is the owner's.
+- MEASURED TO GREEN: API fabric {proposals:37, reviewed:1, reviewPaths:[cmvdxs6w/REVIEW-W7.md]}; irreversibles found:true; browser: owner-queue panel + all rows verified, zero console errors, mobile 390px no horizontal scroll; lint clean.
+
+Stage Summary:
+- The learning system now has a judiciary: proposals get honest measured verdicts with corrected patches staged — the owner's queue turns from a black box into one glance, and broken code can no longer reach ratification silently.
+- Structural finding recorded: 36 of 37 fabric proposals unjudged — the review pipeline lags the learning pipeline; the site now measures that gap hourly.
+- Zero secrets touched; all pushes FF via rebase protocol; agent-9/agent-5 lanes untouched.
