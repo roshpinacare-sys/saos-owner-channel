@@ -615,3 +615,23 @@ Stage Summary:
 - Bridge corrected to exec-cycle's full env contract (STEEM_VAULT_PASSES + ROT2_FLEET_KEYS + ROT_ROSTER — owner-refreshed 10-18).
 - Honest organ-state after full revival: tick=ok, economics=ok, report=ok (core loop LIVE); army-curate=IDLE, soldierClaims=NOTHING-PENDING (healthy-empty, not failures); execute=THINK-GATE-REFUSED (T-80 safety gate working as designed); social=STANDBY; curate=BROADCAST-FAIL (needs the posting private key — owner-held material, adoption pubkey registered on-chain tx de76b399).
 - Cloud clock now: pacemaker :23 · hand-revival :29 · arsenal-sentinel :37 · signing-health :41 · exec-cycle :17 (2h) · dex-beat :53 · catchup/guardians — a coordinated organism.
+---
+Task ID: W5-β
+Agent: zai-code (main instance)
+Task: owner — "תמשיך ודחוף" (continuation of W5: the keys-architecture value push).
+
+Work Log:
+- Life-check: sandbox alive (dev:3000=200, keeper exit 0); W5 record found COMPLETE in worklog (the truncated tail was a tail-window artifact). Discovered the steem repo cloned at /home/z/audit/steem (branch saos-cockpit, canonical) and that parallel agent-9 is actively pushing beats.
+- HARD MEASURED CORRECTION: the steem-repo workflows (signing-health, hive-custody-revival) NEVER RAN — 4+ runs, 0 steps, EMPTY log zips, 3-5s each = startup-class failure (W4-G hub signature). The W5 "honest red" was silent death. identity-guard skips = by-design (`if: false`, spend-limit note by agent-9).
+- FIXED by relocation law: signing-health (runtime-host) deployed in saos-runtime (e8e2f23) — G1..G4 probe: active WIF + posting WIF parsed/derived vs LIVE chain authorities (2 nodes), hourly :43, zero broadcast, zero key material in output.
+- First verdict PARTIAL — honest: posting leg `wif-len-38` → diagnosed compressed-WIF (0x80+key32+0x01+chk, 38B/52 chars; the adoption signed with the ACTIVE WIF so the posting WIF was never WIF-parsed before) → c6d44ab accepts 37B+38B variants → **LIVE-OK 14:11Z: active STM5HhJD… ∈ liveActive(1), posting STM8m3rB… ∈ livePosting(2)**.
+- LAST CURATE GAP CLOSED: daily.mjs R243 reads CI_ADOPT_WIF_POSTING/CI_ADOPT_WIF_ACTIVE from env ("Absent env = zero change") — the bridge never injected them. feeef20 injects both → dispatched cycle: **curate=VOTED** (first curation broadcast since revival), execute=BROADCAST-SPLIT, receipts 9869cfe → saos-cockpit.
+- Publish race measured+hardened (355ad6c): agent-9 beat-push raced the receipts push (fetch-first rejection; old `pull --rebase || true` swallowed the conflict) → full iron-law loop fetch→rebase(-X theirs)→push ×3 + receipts artifact always. Verification dispatch fired.
+- agent-9 findings published to cloud worklog (not touched): their steem-repo hive-custody can never run there; runtime copy ran (13:32 success / 13:37 honest fail-closed `no live hive posting authority in runner-held material`) with suspected tar gap (gen1+EXTRA eras: `/tmp/uw-*/o` missing → 16+4 leaves unexamined → liveHits:0 possibly false-negative).
+- Site: survival panel now shows live "יד-החתימה" badge; API `signing` panel (signingHealth() in sovereign.ts); lint clean; tsc noise pre-existing only.
+- Transient measured (recorded): all-4-repos `git -C` failed with ENOENT while `ls` showed them — passed seconds later; matches sandbox flakiness class; zero data loss (cloud canonical).
+
+Stage Summary:
+- The signing hand is now PROVEN alive hourly by a probe that actually runs: both hands LIVE vs chain (LIVE-OK), curate lane BROADCAST (VOTED) for the first time since revival, and the last "awaits owner posting key" verdict is retired — the key was already in runtime secrets; the gap was the bridge's env contract.
+- Two W5-era blind spots corrected honestly (invisible-death-on-steem-repo; adoption-signed-with-active-WIF masking the posting-WIF format), both root-caused by measurement, both structurally closed.
+- Runtime cloud clock: pacemaker :23 · hand-revival :29 · sentinel :37 · signing-health :43 (runtime-host) · catchup :51 · dex-beat :53 · exec-cycle :17 (2h) · guardian hourly · watchdog.
