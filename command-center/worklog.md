@@ -642,3 +642,18 @@ Stage Summary:
 - Reproducibility: curate=VOTED in BOTH wired cycles; execute varied BROADCAST-SPLIT → HIERARCHY-DENIED (engine's own hierarchy gate per-cycle state — doctrine behaving).
 - Observed (steem lane, not touched): cycle-run.json steps lack `verdict`/`ok` fields → the workflow's summary printer shows all "=fail" while ok:true — engine bookkeeping inconsistency flagged for agent-9.
 - Hub: a5d20cb (rsync supersede note: in-file addendum replaced by the canonical full record; history keeps ea2b3d1).
+---
+Task ID: W5-γ
+Agent: zai-code (main instance)
+Task: owner — "תמשיך ודחוף" (continuation; post-W5-β hardening + budget-guard + observability).
+
+Work Log:
+- Life-check green (dev:3000=200); repos synced — FleetHQ/steem had advanced (pacemaker receipts 14:30Z; agent-9 G13: 10 live posting accounts + 2 verified live posts on-chain).
+- Read W5-VALUE-PLAN: item-1 (owner updates MAIN_KEY) is SUPERSEDED — hands proven LIVE-OK from runtime secrets; annotated the plan (009aa8a): owner owes NOTHING for signing; irreversibles (R11 history-clean, 40→8, FleetHQ-private) remain queued.
+- BUDGET-GUARD: steem-repo signing-health hourly cron burned a failed attempt every :41 against the spend limit (dead legs) → schedule neutered with canonical-pointer comment (a21029a); dispatch kept for honest manual attempts. presence-matrix (read-only probe) + token-forge (weekly, G9-protected) audited and left intact.
+- SITE OBSERVABILITY: engine-pulse() (sovereign.ts) — last steem-hand-revival run (conclusion/event/at/url) as "יד-המנוע" badge next to signing badge; steem added to the commit feed (engine receipts now flow onto the wall — measured: 4 steem items, first=a21029a); API exposes engine panel; lint clean.
+- Cloud clock verification: bridge runs so far all workflow_dispatch; the 14:29 scheduled (cron) run pending GitHub cron delay — will prove the autonomous clock on its own when it fires; signing-health :43 scheduled run due ~14:45+.
+
+Stage Summary:
+- Owner's ratification queue shrank: signing is fully resolved autonomously (both hands live, probe hourly, engine wired) — the plan now asks the owner only for the 3 pre-packaged irreversibles.
+- The organism stopped paying for its own dead legs (budget-guard) and the only real-world-acting organ (the engine hand) is now visible on the owner's site: pulse badge + receipts wall.
