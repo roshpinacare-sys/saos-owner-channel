@@ -66,6 +66,7 @@ type SovereignData = {
   feed?: { ok: boolean; error?: string; data?: Array<{ repo: string; sha: string; msg: string; at: string | null; url: string }> }
   recovery?: { ok: boolean; error?: string; data?: Array<{ path: string; exists: boolean; sha: string | null; lastAt: string | null; msg: string | null; url: string | null }> }
   secrets?: { ok: boolean; error?: string; data?: { clean: boolean; suspects: string[]; scanned: string[] } }
+  signing?: { ok: boolean; error?: string; data?: { conclusion: 'success' | 'failure' | 'unknown'; startedAt: string | null; url: string | null } }
 }
 
 const fmtMu = (mu: number | null | undefined): string =>
@@ -578,6 +579,28 @@ export default function Home() {
                 ) : null}
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-2">
+                {data.signing?.ok && data.signing.data ? (
+                  <a
+                    href={data.signing.data.url ?? 'https://github.com/roshpinacare-sys/saos-runtime/actions/workflows/signing-health.yml'}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`rounded px-2 py-1 text-[10px] font-bold transition hover:opacity-80 ${
+                      data.signing.data.conclusion === 'success'
+                        ? 'bg-emerald-900/50 text-emerald-300'
+                        : data.signing.data.conclusion === 'failure'
+                          ? 'bg-rose-900/60 text-rose-200'
+                          : 'bg-zinc-800 text-zinc-400'
+                    }`}
+                  >
+                    {data.signing.data.conclusion === 'success'
+                      ? '✓ יד-החתימה חיה — active+posting מאומתים מול השרשרת'
+                      : data.signing.data.conclusion === 'failure'
+                        ? '✗ יד-החתימה אדומה — נבדק fail-honest'
+                        : 'יד-החתימה: אין מדידה'}
+                  </a>
+                ) : (
+                  <span className="rounded bg-zinc-800 px-2 py-1 text-[10px] text-zinc-400">מד-החתימה: {data.signing?.error ?? 'לא זמין'}</span>
+                )}
                 {data.secrets?.ok && data.secrets.data ? (
                   <span className={`rounded px-2 py-1 text-[10px] font-bold ${data.secrets.data.clean ? 'bg-emerald-900/50 text-emerald-300' : 'bg-rose-900/60 text-rose-200'}`}>
                     {data.secrets.data.clean ? '✓ אפס-סודות בענן — סריקה נקייה' : `✗ חשודים: ${data.secrets.data.suspects.join(', ')}`}

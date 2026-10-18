@@ -204,6 +204,30 @@ export async function recoveryAssets(): Promise<RecoveryAsset[]> {
 
 export type SecretSweep = { clean: boolean; suspects: string[]; scanned: string[] }
 
+// —— בריאות-יד-החתימה (W5-β) ——
+// המד-האמיתי חי ב-saos-runtime ("signing-health (runtime-host)", שעתי :43):
+// G1..G4 — WIF-active + WIF-posting מנתחים ונגזרים, ונגד-סמכויות-חיות-בשרשרת.
+// מוודא-חי: העותק-בריפו-steem מעולם לא רץ (0 צעדים, לוגים-ריקים) — הענן-הוא הבית.
+export type SigningHealth = {
+  conclusion: "success" | "failure" | "unknown"
+  startedAt: string | null
+  url: string | null
+}
+
+export async function signingHealth(): Promise<SigningHealth> {
+  try {
+    const d = await ghApi<{ workflow_runs: Array<{ id: number; conclusion: string | null; run_started_at: string | null; html_url: string }> }>(
+      `/repos/${ORG}/saos-runtime/actions/workflows/signing-health.yml/runs?per_page=1`,
+    )
+    const r = d.workflow_runs?.[0]
+    if (!r) return { conclusion: "unknown", startedAt: null, url: null }
+    const c = r.conclusion === "success" ? "success" : r.conclusion === "failure" ? "failure" : "unknown"
+    return { conclusion: c, startedAt: r.run_started_at, url: r.html_url ?? null }
+  } catch {
+    return { conclusion: "unknown", startedAt: null, url: null }
+  }
+}
+
 // אפס-סודות בענן (חוק-מפתח של ה-owner): סריקת שורש ה-hub + command-center —
 // אסורים: pat.env/.env*/מפתחות/קרדנשלים/tokens. היסטוריית my-project המקומית מעולם לא יצאה מהמכונה.
 const SECRET_RX = /^(pat\.env|\.env(\..+)?|.*\.pem|id_rsa.*|id_ed25519.*|.*credentials.*|.*token\.(env|txt|key))$/i
