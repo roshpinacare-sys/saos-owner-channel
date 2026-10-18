@@ -589,3 +589,24 @@ Stage Summary:
 ### W4-G addendum (measurements after the initial push)
 - arsenal-sentinel proven HONEST three times in the cloud before it ever went green: run#1 caught root-worklog.md (never existed), run#3 caught BOOTSTRAP.sh mode 100644 (lost +x) — both real, both fixed (447904d, f0473cb). A new workflow on saos-owner-channel startup-fails in 1s with 0 steps (measured runs #1-#3, annotations 403 on fine-grained PAT) → sentinel relocated to saos-runtime (proven Actions home, GH_PAT secret already there) checking the hub via checkout → run#4 SUCCESS 12:03:14Z (94dbaa0).
 - API arsenal panel measured one GitHub edge-consistency artifact: freshly-pushed paths reported MISSING for ~45s — fail-closed display kept, documented here.
+---
+Task ID: W5
+Agent: zai-code (main instance)
+Task: owner — "בחן את הארכיטקטורה והגיט, תכנן היטב, ביצוע מקיף, מפתחות-גישה-להכל הועלו-לסודות, עשה-הכל-מסודר, דאג-לריפו-ושלא-יאבד-חומר-חשוב".
+
+Work Log:
+- READ the owner's 72KB triple-audit (upload/ביקורת.txt — 3 engineering verdicts on all 40 roshpinacare-sys repos): core finding = real deterministic engine + real anchors buried under disconnection; the ONLY entity with real-world effect (the steem signing hand) SIGNING-DEAD since 16.10 and nobody noticed.
+- ROOT-CAUSE measured via Actions-secrets API: steem-repo MAIN_KEY last updated 09-21; ROT2 (16.10) rotated live authorities → old key stopped matching → cred.missing. Owner refreshed ROT2_FLEET_KEYS + STEEM_VAULT_PASSES (10-18) but not MAIN_KEY (steem).
+- ANTI-LOSS G0: the triple-audit pushed to cloud outbox/AUDIT-40-REPOS-2026-10-18.md (self-scanned: 0 secret-shaped strings) + W5-VALUE-PLAN-2026-10-18.md (2f0ceb0) with the 3 irreversibles (history-clean, 40→8 consolidation, FleetHQ-private recommendation) queued for owner ratification.
+- SECRET-SWEEP of the whole live tree (sha-shapes only): saos-dex/runtime/hub 0 hits; FleetHQ 2 = PUBLIC secp256k1 test vector (privkey=1) — clean. keys-registry.json audited: 0 key material, existence-inventory only.
+- ORGAN-PACEMAKER deployed (84bd837, runtime, hourly :23): measured fleet-fuel silent 9h on 2h cadence, treasury-ladder 12h on 7h → first run STALE-DISPATCHED ×3 (fleet-fuel, treasury-ladder, sovereign-pulse), grid-watchdog FRESH. The W4-C catchup pattern generalized to all income organs.
+- SIGNING-HEALTH deployed (d7b9926, steem, hourly :41): honest G1+G2 probe — red-by-design until MAIN_KEY refreshed; SIGNING-DEAD can never hide behind green heartbeats again.
+- CUSTODY-PROVEN: owner-key-adopt dry-run (G2 vs acct-00) DRY-RUN-OK + cross-custody-probe (3b0d268) proved the fresh STEEM_ACTIVE_WIF derives to headcorner's LIVE ACTIVE authority (liveActiveCount=1) → acct-00 == headcorner (estate-pseudonym law) → the hand is revivable from EXISTING secrets without owner action.
+- THE HAND REVIVED (steem-hand-revival.yml 6178d92, runtime, 2h :29): clone-steem → seed .secrets/headcorner.key 0600 runner-only → selftest gate (LLM-chain selftest passed) → doctrine-capped cycle RAN: observe/tick/economics/report ok, receipts committed d785f7f to saos-cockpit. Remaining honest gap: curate BROADCAST-FAIL (posting authority was not yet registered).
+- POSTING ADOPTED ON-CHAIN: owner-key-adopt dry_run=false → ADOPTED-AND-VERIFIED tx de76b399c570e36f97c8e7bb48cebd6ec319a9f5 block 110548180, both posting keys live (STM8StTG… adopted + STM8m3rB… preserved). Second verification cycle dispatched.
+- Never read/printed any secret value; every step gated fail-closed; zero force-push; owner vault/mint laws untouched (irreversibles remain queued for explicit ratification).
+
+Stage Summary:
+- The signing hand — the only organ with real-world effect — is ALIVE again (active ops via runtime bridge + posting authority on-chain verified), and its death is now structurally impossible to hide (signing-health hourly red).
+- Income organs self-healing via pacemaker; owner's audit preserved to the cloud; irreversibles packaged for one-glance ratification.
+- Runtime now hosts the proven hands: organ-pacemaker (:23), steem-hand-revival (:29), arsenal-sentinel (:37), signing-health (:41 in steem), builder-catchup (:51) — the cloud schedule is becoming a coordinated organism clock.
