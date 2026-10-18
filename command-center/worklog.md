@@ -635,3 +635,10 @@ Stage Summary:
 - The signing hand is now PROVEN alive hourly by a probe that actually runs: both hands LIVE vs chain (LIVE-OK), curate lane BROADCAST (VOTED) for the first time since revival, and the last "awaits owner posting key" verdict is retired — the key was already in runtime secrets; the gap was the bridge's env contract.
 - Two W5-era blind spots corrected honestly (invisible-death-on-steem-repo; adoption-signed-with-active-WIF masking the posting-WIF format), both root-caused by measurement, both structurally closed.
 - Runtime cloud clock: pacemaker :23 · hand-revival :29 · sentinel :37 · signing-health :43 (runtime-host) · catchup :51 · dex-beat :53 · exec-cycle :17 (2h) · guardian hourly · watchdog.
+
+### W5-β addendum — verification loop measured to green
+- Publish hardening took 3 measured attempts (each honest): #1 single push → rejected (agent-9 race); #2 rebase loop → `no rebase in progress` ×3 (engine leaves files outside state/ — rebase refuses to start); #3 `pull --rebase -X theirs --autostash` → **run 39135734806 FULL GREEN: cycle success · publish success · receipts artifact success · verdict success**.
+- Receipts on cloud: e954e65 @ 14:25:00Z (saos-cockpit) — txids journaled, zero keys.
+- Reproducibility: curate=VOTED in BOTH wired cycles; execute varied BROADCAST-SPLIT → HIERARCHY-DENIED (engine's own hierarchy gate per-cycle state — doctrine behaving).
+- Observed (steem lane, not touched): cycle-run.json steps lack `verdict`/`ok` fields → the workflow's summary printer shows all "=fail" while ok:true — engine bookkeeping inconsistency flagged for agent-9.
+- Hub: a5d20cb (rsync supersede note: in-file addendum replaced by the canonical full record; history keeps ea2b3d1).
