@@ -723,3 +723,21 @@ Stage Summary:
 - The owner's fear was half-true and the architecture answered it: the console never regressed (git-home), the mirror tree died and resurrected losslessly, and the learning-vs-judging gap is now fully mapped with a standing index + build-immunity.
 - The queue keeps growing (44 and counting) — but every proposal now lands on a mapped surface with verdicts; ratification remains one glance.
 - FleetHQ watches surfaced: 29 red workflows (GridWatch healing), value-scan 270min>SLA90 + products stale — flagged for the runtime legs (not my lane).
+---
+Task ID: W9
+Agent: zai-code (main instance)
+Task: owner — "תמשיך ודחוף" (continuation after W8)
+
+Work Log:
+- SANDBOX AUDIT (standing owner law, re-verified this round): my-project alive and current — all 4 key files byte-identical vs cloud hub @ accdbc1 (LOCAL==CLOUD sha256 ✓), dev:3000=200, keeper exit=0, lint clean. NOT deleted, NOT regressed.
+- GIT UPDATE: all 5 repos pulled --rebase -X theirs --autostash → behind=0 across the board (hub accdbc1, runtime bca7be8, dex 52ff0e8→, FleetHQ 40c121a2, steem 3e51b4f incl. agent-9's "state via API last-mile" verdicts + office checkpoint engine VERIFIED cycle 37/37).
+- QUEUE-KEEPS-GROWING measured live: fabric proposals 45→47 DURING this round (the learner adds faster than the judiciary reads — which is exactly why the index exists).
+- W9 JUDICIARY WAVE: 7 proposals that arrived after the W8 index (cmvee7v2, cmveeblf, cmveei30, cmveeogv, cmvef1d7, cmvefe91, cmvefklm) — every one READ IN FULL (1,876 lines total) and judged with measured blockers. All 7: REJECT-AS-WRITTEN · IDEA-ENDORSED. Highlights: cmveeblf compile-brick (logger/prometheus defined twice → TS2300); cmveeogv `req.text()` without await consumes the body → every POST bricks + scans "[object Promise]"; cmvef1d7 phantom deps in db.ts = whole-engine import brick, its "fixes" (Roast-68/R16-a·m7) already live; cmvefklm getCurrentPrice() returns literal 1.0 (zero-mock violation); cmvee7v2 plaintext credential persistence in DB. `@prometheus/client` (nonexistent package name) appeared 2× more — family total now heavy.
+- INDEX UPDATED + PUSHED: W9-DELTA section appended to fabric/REVIEW-INDEX-W8.md → coverage 47/47 judged (1 endorse no-op · 6 endorse-with-fixes · 40 reject-as-written · 1 deep-reviewed W7). Pushed dex bf04452b (attempt 1; engine-generated db/dex.db.pre-rebirth-* backup left untracked — not mine, not pushed).
+- STRUCTURAL UPGRADE (site): hardcoded W8 verdict counts in the owner-queue panel replaced by LIVE parsing of REVIEW-INDEX-W8.md from the cloud (new fabricVerdicts() in sovereign.ts: base64 contents-API read → per-row verdict classification → fail-closed guards: rows≥40 AND zero unclassified rows, else throw). New route panel `verdicts` (20 panels now). Panel line now shows live: 47 שורות-פסק → 1 נקיות · 6 ניתנות-תיקון (ids listed, amber) · 40 נדחות · 1 עומק, linked to the index source.
+- Parse verified locally (python mirror of the TS logic) BEFORE deploy: rows=47, endorse=1, ewf=6, reject=40, classified=47/47.
+
+Stage Summary:
+- The judiciary is now self-updating: verdict counts on the site are read from the pushed index file, not hardcoded — the queue can grow as fast as it likes, the panel never goes stale.
+- Full coverage achieved: every proposal in the fabric queue (47/47) has a written, measured verdict; ratification of the 6 fix-packs remains the owner's one glance.
+- Zero secrets, zero live-code touches, owner gate untouched, agent-9/agent-5 lanes untouched.
