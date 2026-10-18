@@ -610,3 +610,8 @@ Stage Summary:
 - The signing hand — the only organ with real-world effect — is ALIVE again (active ops via runtime bridge + posting authority on-chain verified), and its death is now structurally impossible to hide (signing-health hourly red).
 - Income organs self-healing via pacemaker; owner's audit preserved to the cloud; irreversibles packaged for one-glance ratification.
 - Runtime now hosts the proven hands: organ-pacemaker (:23), steem-hand-revival (:29), arsenal-sentinel (:37), signing-health (:41 in steem), builder-catchup (:51) — the cloud schedule is becoming a coordinated organism clock.
+
+### W5 addendum — final cycle verdicts (cycle-3, after vault-passes fix 06423eb)
+- Bridge corrected to exec-cycle's full env contract (STEEM_VAULT_PASSES + ROT2_FLEET_KEYS + ROT_ROSTER — owner-refreshed 10-18).
+- Honest organ-state after full revival: tick=ok, economics=ok, report=ok (core loop LIVE); army-curate=IDLE, soldierClaims=NOTHING-PENDING (healthy-empty, not failures); execute=THINK-GATE-REFUSED (T-80 safety gate working as designed); social=STANDBY; curate=BROADCAST-FAIL (needs the posting private key — owner-held material, adoption pubkey registered on-chain tx de76b399).
+- Cloud clock now: pacemaker :23 · hand-revival :29 · arsenal-sentinel :37 · signing-health :41 · exec-cycle :17 (2h) · dex-beat :53 · catchup/guardians — a coordinated organism.
