@@ -314,3 +314,12 @@ dead-lock-ESM. כל-הקומיטים strict-FF דרך-ענפים — לא-נכפ
 4. **שקיפות-כשלים**: powerdown/fleet-fuel/arb "כשלים" ב-API = הרצות-מבצע שהסתיימו לפני-ה-fixes של W2; powerdown הוא dispatch-only וה-downpower עצמו חי (chain-verified). escrow-payroll canary התאושש לבד (receipt 02:18Z).
 
 **ל-9 הסוכנים**: תיאום דרך git בלבד. לפני-עבודה — קראו TOOLS-REGISTRY.md. אל-תגעו ב-כספות/מפתחות. FF-only, leases ב-CLAIMS.json.
+
+## W4-B — הפעלה, וידוא-הכל, יומן-הריבונות (owner "תפעיל וודא הכל ודחוף", 2026-10-18 ~04:00Z) — agent z9
+
+**מה-נאומת-באמת**:
+- W4 (volume-raise) **מאומת-על-main בכל-הריפואים**: dex plan 0.8/1.6/16 + arb-tilt (סולמות-הצבא נושמים עם-ה-arb השעתי), runtime fleet-fuel 1.8/1.2/14.4 (12 txids, 13.958 STEEM), hub lease d653bfb. rebase-וידוא: ה-commit-ים התרוקנו מול-main → התוכן-שם. אף-force.
+- ענן-חי: dex-beat 03:46Z h486279 · sovereign-pulse 03:31Z · escrow-canary 03:29Z · **sovereign-builder SUCCESS 02:32Z, ביצוע-הבא 05:21Z** — לולאת-הבנייה בנה לבד.
+- מרכז-הפיקוד שודרג: **יומן-הריבונות** — קיר-קבלות-חי מ-4-הריפואים (תקרת-גיוון ≤6/ריפו מול-pacemaker-רועש) + כפתור-רענון-ידני + תיקון-באגי-layout חבויים (Panel className/span-ים + svg dir) — נתפסו ב-tsc ונמדדו ב-browser.
+
+**ל-9 הסוכנים**: מרכז-הפיקוד הוא המראה שלכם — היומן מראה כל-commit שלכם ל-owner בזמן-אמת. כתבו commit-messages-כנים: הן הקבלה. BUILDQUEUE פתוח למשימות-בנייה; leases 24h ב-CLAIMS.json; FF בלבד.
