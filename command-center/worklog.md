@@ -657,3 +657,19 @@ Work Log:
 Stage Summary:
 - Owner's ratification queue shrank: signing is fully resolved autonomously (both hands live, probe hourly, engine wired) — the plan now asks the owner only for the 3 pre-packaged irreversibles.
 - The organism stopped paying for its own dead legs (budget-guard) and the only real-world-acting organ (the engine hand) is now visible on the owner's site: pulse badge + receipts wall.
+---
+Task ID: W6
+Agent: zai-code (main instance)
+Task: owner — "תמשיך ודחוף" (continuation after W5-γ; the autonomous decision layer surfaced).
+
+Work Log:
+- Life-check green: dev:3000=200 (zero console errors), local repos synced. Cloud legs ACTIVE since W5-γ: saos-runtime +1 (33facb0 beat verdict custodian-free), FleetHQ +11 (office-ci build pass, vault-seal/sync, pacemaker receipts, and the NEW "decide: sovereign decision cycle SOV-POLICY/1"), steem +2 (agent-9: beat verdicts "state via API last-mile (survives reconcile races)").
+- THE BRAIN DISCOVERED: FleetHQ office/state/sovereign-decisions.json — a half-hourly autonomous decision cycle (SOV-POLICY/1): principle "הריבונות מחליטה ומבצעת — הפניה-לבעלים = שלילת-הריבונות", authority=advisory, sense over 6 sources (openCloser/gridHealth/officeState/decisionsPrev/gridTruth/valueScan — all ok), 12 evidence-anchored decisions (9 standing; D1-D6 executed incl. CROSS_REVIVE_PAT sealed box, GEN-2 vault rotation, roshpina hosting armed→alive, T2 governor params, D-023 funding mandate), watches (auto-fleet-health: 26 red workflows being GridWatch-healed; auto-freshness: products 9580min>SLA escalated none). The system's brain existed on the cloud but was INVISIBLE on the owner's console — W6's structural gap.
+- BUILT (my lane — command-center): sovereignDecisions() in sovereign.ts (typed defensive reader of FleetHQ office/state/sovereign-decisions.json with shape validation fail-closed); API route exposes `decisions` panel; new UI panel "המוח · מחזור-ההחלטות הריבוני" — sense chip strip (✓/✗ + age), scrollable decisions list (max-h-64) with status dots (executed=emerald, attested=teal, armed-conditional=amber, watch/zinc), authority envelope footer (advisory · Autonomy/sovereign-decider · exec 5 · gates 3 · Σ12 run 5), last-update age. Plus repoBadge entries for steem (rose) + FleetHQ (lime) on the receipts wall.
+- MEASURED TO GREEN: API returns decisions ok:True (12 decisions, 6 sense, stats {standing:9, thisRun:5, total:12}); browser: panel title present, D1/D3b/auto-fleet-health/auto-freshness/CROSS_REVIVE_PAT rows found, 6/6 sense chips, no disconnect state, ZERO console errors; mobile 390px: panel 358px, no horizontal scroll, chips wrap, area column hidden by design; desktop screenshot verified. (One transient eval "FAIL" root-caused as timing artifact — networkidle resolves before client fetch completes on reload; recheck with settle-wait proved all green. Recorded honestly.)
+- lint clean throughout. agent-9's flags (cycle-run verdict fields, hive tar gap) left untouched in his lane as before.
+
+Stage Summary:
+- The owner's console now shows the organism's brain: every autonomous decision (with its status, area, and reasoning on hover) — nothing decides in the dark. SOV-POLICY/1 surfaces the governance principle, the advisory authority envelope (5 execute lanes, 3 hard gates), and live sense freshness.
+- Receipts wall visually complete for all 5 repos. Site remains zero-mock, fail-closed: brain disconnected = visible red.
+- Cloud clock verified independently: FleetHQ decide cycle rewrites state every ~30min; runtime/runtime-host probes hourly; agent-9 beats alive on saos-cockpit.

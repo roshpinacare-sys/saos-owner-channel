@@ -68,6 +68,21 @@ type SovereignData = {
   secrets?: { ok: boolean; error?: string; data?: { clean: boolean; suspects: string[]; scanned: string[] } }
   signing?: { ok: boolean; error?: string; data?: { conclusion: 'success' | 'failure' | 'unknown'; startedAt: string | null; url: string | null } }
   engine?: { ok: boolean; error?: string; data?: { conclusion: 'success' | 'failure' | 'running' | 'unknown'; event: string | null; at: string | null; url: string | null } }
+  decisions?: {
+    ok: boolean
+    error?: string
+    data?: null | {
+      generatedAt: string
+      policyVersion: string
+      authority: string
+      authorityOf?: string
+      principle?: string
+      sense: Record<string, { ok: boolean; ageMin: number }>
+      decisions: Array<{ id: string; area?: string; title?: string; status?: string; decidedAt?: string; reasoning?: string }>
+      stats?: { standing?: number; thisRun?: number; total?: number }
+      authorityEnvelope?: { execute?: string[]; gates?: string[] }
+    }
+  }
 }
 
 const fmtMu = (mu: number | null | undefined): string =>
@@ -99,6 +114,23 @@ function verdictTone(v: string): { dot: string; text: string; label: string } {
   }
 }
 
+function decisionTone(status?: string): { dot: string; text: string; label: string } {
+  switch ((status ?? '').split(' ')[0]) {
+    case 'executed':
+      return { dot: 'bg-emerald-400', text: 'text-emerald-300', label: 'בוצע' }
+    case 'attested':
+      return { dot: 'bg-teal-400', text: 'text-teal-300', label: 'מאומת' }
+    case 'armed-conditional':
+      return { dot: 'bg-amber-400', text: 'text-amber-300', label: 'חמוש-מותנה' }
+    case 'watch':
+      return { dot: 'bg-amber-400/70', text: 'text-amber-200/90', label: 'במעקב' }
+    case 'clear':
+      return { dot: 'bg-zinc-400', text: 'text-zinc-300', label: 'תקין' }
+    default:
+      return { dot: 'bg-zinc-600', text: 'text-zinc-400', label: status ?? '—' }
+  }
+}
+
 function repoBadge(repo: string): string {
   switch (repo) {
     case 'saos-dex':
@@ -107,6 +139,10 @@ function repoBadge(repo: string): string {
       return 'bg-amber-900/40 text-amber-300'
     case 'saos-owner-channel':
       return 'bg-teal-900/40 text-teal-300'
+    case 'steem':
+      return 'bg-rose-900/40 text-rose-300'
+    case 'FleetHQ':
+      return 'bg-lime-900/40 text-lime-300'
     default:
       return 'bg-zinc-800 text-zinc-300'
   }
@@ -478,6 +514,54 @@ export default function Home() {
                   <div className="font-mono text-[10px] text-rose-400/80">{data.hub.error}</div>
                 )}
               </div>
+            </Panel>
+
+            {/* המוח-הריבוני — מחזור-ההחלטות SOV-POLICY/1 (W6) */}
+            <Panel title="המוח · מחזור-ההחלטות הריבוני" sub="FleetHQ · SOV-POLICY/1" className="md:col-span-2">
+              {data.decisions?.ok && data.decisions.data ? (
+                <div className="space-y-2 text-[11px]">
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.entries(data.decisions.data.sense).map(([k, v]) => (
+                      <span
+                        key={k}
+                        className={`rounded px-1.5 py-0.5 font-mono text-[9px] ${v.ok ? 'bg-emerald-950/60 text-emerald-300' : 'bg-rose-950/60 text-rose-300'}`}
+                        dir="ltr"
+                      >
+                        {k} {v.ok ? '✓' : '✗'} {v.ageMin}m
+                      </span>
+                    ))}
+                  </div>
+                  <div className="max-h-64 space-y-1 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+                    {data.decisions.data.decisions.map((d) => {
+                      const t = decisionTone(d.status)
+                      return (
+                        <div key={d.id} className="flex items-start gap-2 rounded bg-black/20 px-2 py-1" title={d.reasoning ?? undefined}>
+                          <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${t.dot}`} />
+                          <span className="shrink-0 font-mono text-[10px] text-zinc-500" dir="ltr">{d.id}</span>
+                          <span className="hidden shrink-0 font-mono text-[9px] text-zinc-600 sm:inline" dir="ltr">{d.area ?? ''}</span>
+                          <span className={`truncate ${t.text}`}>{d.title ?? d.id}</span>
+                          <span className="ms-auto shrink-0 text-[9px] text-zinc-600">{t.label}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 rounded bg-black/30 px-2 py-1.5 font-mono text-[9px] text-zinc-500" dir="ltr">
+                    <span>{data.decisions.data.authority} · {data.decisions.data.authorityOf ?? ''}</span>
+                    <span>
+                      exec {data.decisions.data.authorityEnvelope?.execute?.length ?? 0} · gates{' '}
+                      {data.decisions.data.authorityEnvelope?.gates?.length ?? 0} · Σ{data.decisions.data.stats?.total ?? '?'} (run{' '}
+                      {data.decisions.data.stats?.thisRun ?? '?'})
+                    </span>
+                  </div>
+                  <div className="text-[10px] leading-relaxed text-zinc-500">
+                    עדכון אחרון לפני{' '}
+                    {ageHe(Math.max(0, Math.round((Date.now() - new Date(data.decisions.data.generatedAt).getTime()) / 1000)))} · הריבונות
+                    מחליטה ומבצעת — כל-החלטה עם ראיה מדודה, עגונה ב-git, ומוצגת כאן ללא צנזורה.
+                  </div>
+                </div>
+              ) : (
+                <div className="text-xs text-rose-400">המוח מנותק: {data.decisions?.error ?? 'אין נתונים'}</div>
+              )}
             </Panel>
 
             {/* איברי-ענן מלאים */}

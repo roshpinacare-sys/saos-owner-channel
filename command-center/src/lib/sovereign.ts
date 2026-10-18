@@ -228,6 +228,45 @@ export async function signingHealth(): Promise<SigningHealth> {
   }
 }
 
+// —— המוח-הריבוני (W6): מחזור-ההחלטות SOV-POLICY/1 ב-FleetHQ ——
+// העיקרון שהקובץ מצהיר: הריבונות מחליטה ומבצעת; הפניה-לבעלים = שלילת-הריבונות.
+// sense (מדדי-טריות של 6 מקורות) → decisions (ראיה-מדודה לכל-החלטה) → record (git commit).
+// מחזור decide חצי-שעתי ב-FleetHQ משכתב-את-הקובץ; האתר מציג-את-המוח — לא-חבוי.
+export type DecisionSense = { ok: boolean; ageMin: number }
+
+export type DecisionItem = {
+  id: string
+  from?: string
+  area?: string
+  title?: string
+  status?: string
+  decidedAt?: string
+  executedAt?: string
+  reasoning?: string
+  evidence?: Record<string, unknown>
+}
+
+export type SovereignDecisions = {
+  schema: string
+  generatedAt: string
+  policyVersion: string
+  principle?: string
+  authority: string
+  authorityOf?: string
+  authorityEnvelope?: { execute?: string[]; gates?: string[] }
+  sense: Record<string, DecisionSense>
+  decisions: DecisionItem[]
+  stats?: { standing?: number; thisRun?: number; total?: number }
+}
+
+export async function sovereignDecisions(): Promise<SovereignDecisions> {
+  const j = (await rawFile("FleetHQ", "office/state/sovereign-decisions.json")) as SovereignDecisions
+  if (!j || !Array.isArray(j.decisions) || !j.policyVersion) {
+    throw new Error("sovereign-decisions: unexpected shape")
+  }
+  return j
+}
+
 // —— פעימת-יד-המנוע (W5-γ) ——
 // הגשר (steem-hand-revival ב-runtime) = האיבר-היחיד-עם-אפקט-אמיתי:
 // מחזור doctrine-capped (SENSE→DECIDE→ACT→RECORD) — curate מצביע, execute כפוף
