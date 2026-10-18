@@ -147,6 +147,83 @@ export async function repoCommits(repo: string, perPage = 8): Promise<FeedItem[]
   }))
 }
 
+// —— מגן-השרידות (W4-G): כלי-התחייה על הענן + סריקת-אפס-סודות ——
+// החוק: הארסנל חי על main ב-hub; הסנדבוקס אפמרלי. האתר עצמו מציג-בכל-רגע
+// שכלי-התחייה קיימים בענן ושאפס סודות דלף. חסר/דלף = אדום גלוי.
+
+export type RecoveryAsset = {
+  path: string
+  exists: boolean
+  sha: string | null
+  lastAt: string | null
+  msg: string | null
+  url: string | null
+}
+
+export const ARSENAL_PATHS = [
+  "BOOTSTRAP.sh",
+  "BOOTSTRAP-COMMAND-CENTER.sh",
+  "RECOVER-ALL.sh",
+  "AGENT-MANUAL.md",
+  "RESURRECTION.md",
+  "command-center/src/app/page.tsx",
+  "worklog.md",
+] as const
+
+export async function recoveryAssets(): Promise<RecoveryAsset[]> {
+  return Promise.all(
+    ARSENAL_PATHS.map(async (p): Promise<RecoveryAsset> => {
+      try {
+        const arr = await ghApi<GhCommit[]>(
+          `/repos/${ORG}/saos-owner-channel/commits?path=${encodeURIComponent(p)}&per_page=1`,
+        )
+        if (!arr.length) return { path: p, exists: false, sha: null, lastAt: null, msg: null, url: null }
+        const c = arr[0]
+        return {
+          path: p,
+          exists: true,
+          sha: c.sha.slice(0, 7),
+          lastAt: c.commit.author?.date ?? null,
+          msg: (c.commit.message ?? "").split("\n")[0].slice(0, 110),
+          url: c.html_url,
+        }
+      } catch (e: unknown) {
+        // 404 (נתיב שלא-התקיים-מעולם) או כשל-רשת — שניהם מוצגים fail-closed כ"חסר"
+        return {
+          path: p,
+          exists: false,
+          sha: null,
+          lastAt: null,
+          msg: e instanceof Error && e.message.includes("404") ? null : `api: ${e instanceof Error ? e.message : String(e)}`.slice(0, 80),
+          url: null,
+        }
+      }
+    }),
+  )
+}
+
+export type SecretSweep = { clean: boolean; suspects: string[]; scanned: string[] }
+
+// אפס-סודות בענן (חוק-מפתח של ה-owner): סריקת שורש ה-hub + command-center —
+// אסורים: pat.env/.env*/מפתחות/קרדנשלים/tokens. היסטוריית my-project המקומית מעולם לא יצאה מהמכונה.
+const SECRET_RX = /^(pat\.env|\.env(\..+)?|.*\.pem|id_rsa.*|id_ed25519.*|.*credentials.*|.*token\.(env|txt|key))$/i
+
+export async function secretSweep(): Promise<SecretSweep> {
+  const [root, cc] = await Promise.all([
+    ghApi<Array<{ name: string; type: string }>>(`/repos/${ORG}/saos-owner-channel/contents`),
+    ghApi<Array<{ name: string; type: string }>>(`/repos/${ORG}/saos-owner-channel/contents/command-center`),
+  ])
+  const scanned: string[] = []
+  const suspects: string[] = []
+  for (const list of [root, cc]) {
+    for (const f of list) {
+      scanned.push(f.name)
+      if (f.type === "file" && SECRET_RX.test(f.name)) suspects.push(f.name)
+    }
+  }
+  return { clean: suspects.length === 0, suspects, scanned }
+}
+
 // —— סיכום-איברים (אורגנים) ——
 export const ORGAN_NAMES = [
   "dex-beat",

@@ -13,7 +13,8 @@ AUTH="x-access-token:${PAT}@github.com"
 
 echo "[bootstrap] 1/5 cloning the homes (the only truth)…"
 mkdir -p "$BASE"
-for r in saos-owner-channel saos-dex saos-runtime; do
+# [W4-G] FleetHQ נוסף — נמדד בתחייה 2026-10-18: משחזר-הליבה השאיר את מפקדת-הצי מחוץ-לשחזור
+for r in saos-owner-channel saos-dex saos-runtime FleetHQ; do
   [ -d "$BASE/$r/.git" ] || git clone -q "https://${AUTH}/roshpinacare-sys/$r.git" "$BASE/$r"
 done
 

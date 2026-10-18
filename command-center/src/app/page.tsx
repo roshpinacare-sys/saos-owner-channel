@@ -64,6 +64,8 @@ type SovereignData = {
   hub: { ok: boolean; error?: string; data?: unknown }
   digest: { ok: boolean; error?: string; data?: unknown }
   feed?: { ok: boolean; error?: string; data?: Array<{ repo: string; sha: string; msg: string; at: string | null; url: string }> }
+  recovery?: { ok: boolean; error?: string; data?: Array<{ path: string; exists: boolean; sha: string | null; lastAt: string | null; msg: string | null; url: string | null }> }
+  secrets?: { ok: boolean; error?: string; data?: { clean: boolean; suspects: string[]; scanned: string[] } }
 }
 
 const fmtMu = (mu: number | null | undefined): string =>
@@ -545,6 +547,51 @@ export default function Home() {
               ) : (
                 <div className="text-xs text-rose-400">יומן מנותק: {data.feed?.error ?? 'אין קבלות'}</div>
               )}
+            </Panel>
+
+            {/* מגן-השרידות — ארסנל-התחייה על הענן (W4-G) */}
+            <Panel title="מגן-השרידות · ארסנל-התחייה על הענן" sub="כלי הקיומים על main · אפס-סודות" className="md:col-span-2 xl:col-span-3">
+              <div className="grid grid-cols-1 gap-2 text-[11px] md:grid-cols-2 xl:grid-cols-4">
+                {(data.recovery?.data ?? []).map((a) => (
+                  <a
+                    key={a.path}
+                    href={a.exists && a.url ? a.url : 'https://github.com/roshpinacare-sys/saos-owner-channel'}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`rounded-lg border bg-black/30 p-2.5 transition hover:border-emerald-700/60 ${a.exists ? 'border-emerald-900/40' : 'border-rose-900/60'}`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className={`shrink-0 rounded px-1 py-0.5 text-[9px] font-bold ${a.exists ? 'bg-emerald-900/50 text-emerald-300' : 'bg-rose-900/50 text-rose-300'}`}>
+                        {a.exists ? '✓ על main' : '✗ חסר'}
+                      </span>
+                      <span className="truncate font-mono text-[10px] text-emerald-300" dir="ltr">{a.path}</span>
+                    </div>
+                    <div className="mt-1 truncate font-mono text-[9px] text-zinc-500" dir="ltr">
+                      {a.sha ? `${a.sha} · ${a.lastAt ? a.lastAt.slice(5, 16).replace('T', ' ') : '—'}` : a.msg ?? 'לא בהיסטוריה' }
+                    </div>
+                  </a>
+                ))}
+                {!data.recovery?.ok ? (
+                  <div className="rounded-lg border border-rose-900/60 bg-rose-950/20 p-2.5 text-[10px] text-rose-300 md:col-span-2 xl:col-span-4">
+                    מגן-השרידות מנותק: {data.recovery?.error ?? 'אין נתונים'}
+                  </div>
+                ) : null}
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {data.secrets?.ok && data.secrets.data ? (
+                  <span className={`rounded px-2 py-1 text-[10px] font-bold ${data.secrets.data.clean ? 'bg-emerald-900/50 text-emerald-300' : 'bg-rose-900/60 text-rose-200'}`}>
+                    {data.secrets.data.clean ? '✓ אפס-סודות בענן — סריקה נקייה' : `✗ חשודים: ${data.secrets.data.suspects.join(', ')}`}
+                  </span>
+                ) : (
+                  <span className="rounded bg-zinc-800 px-2 py-1 text-[10px] text-zinc-400">סריקת-סודות: {data.secrets?.error ?? 'לא זמין'}</span>
+                )}
+                <span className="font-mono text-[9px] text-zinc-600" dir="ltr">
+                  scanned: {(data.secrets?.data?.scanned.length ?? 0)} files (hub root + command-center)
+                </span>
+              </div>
+              <div className="mt-2 rounded bg-black/40 p-2 font-mono text-[9px] leading-relaxed text-emerald-600" dir="ltr">
+                resurrection: git clone …saos-owner-channel &amp;&amp; PAT=*** bash RECOVER-ALL.sh — one command, whole organism
+              </div>
             </Panel>
 
             {/* מפת-כלים */}

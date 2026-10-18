@@ -4,6 +4,8 @@ import {
   rawText,
   ghApi,
   repoCommits,
+  recoveryAssets,
+  secretSweep,
   ORGAN_NAMES,
   ORGAN_FRESHNESS_SEC,
   type Snapshot,
@@ -60,7 +62,7 @@ export async function GET() {
     return NextResponse.json(g.__sovCache.payload)
   }
 
-  const [snapP, armyP, volP, klinesP, makersP, gridP, runsP, claimsP, digestP, policiesP, feedP] = await Promise.all([
+  const [snapP, armyP, volP, klinesP, makersP, gridP, runsP, claimsP, digestP, policiesP, feedP, recoveryP, sweepP] = await Promise.all([
     panel(rawFile("saos-dex", "db/state-snapshot.json").then((j) => j as Snapshot), "state-snapshot"),
     panel(rawFile("saos-dex", "grids/state/army-public.json").then((j) => j as ArmyPublic), "army-public"),
     panel(rawFile("saos-dex", "grids/state/volume-verify.json").then((j) => j as VolumeVerify), "volume-verify"),
@@ -96,6 +98,10 @@ export async function GET() {
       }),
       "commit-feed",
     ),
+    // מגן-השרידות: כלי-התחייה חייבים להיות על main ב-hub — חסר = אדום גלוי
+    panel(recoveryAssets(), "recovery-assets"),
+    // אפס-סודות בענן: חוק-מפתח של ה-owner — דליפה = אדום גלוי
+    panel(secretSweep(), "secret-sweep"),
   ])
 
   // קבלות-צבא: 8 השורות האחרונות מה-jsonl
@@ -197,6 +203,8 @@ export async function GET() {
     hub: claimsP,
     digest: digestP,
     feed: feedP,
+    recovery: recoveryP,
+    secrets: sweepP,
   }
 
   g.__sovCache = { at: Date.now(), payload }
