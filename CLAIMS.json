@@ -1,6 +1,6 @@
 {
  "schema": "saos-9agent-claims@1",
- "updatedAt": "2026-10-18T02:45:00Z",
+ "updatedAt": "2026-10-18T03:25:00Z",
  "rules": {
   "branchNaming": "agent/<agent-id>/<lane>",
   "noDirectMainPush": true,
@@ -276,6 +276,17 @@
    "expiresAt": "2026-10-19T02:45:00Z",
    "scope": "owner package round-3: (1) owner-facing LIVE command-center site (sandbox my-project /) fed by real git state (snapshot+army+organs+klines+volume), (2) sovereign-builder loop — from checker to BUILDER: BUILDQUEUE.json + evolve.mjs + sovereign-builder.yml (cron 21 */3 * * *) executing one real build task per run with W1.5 gates, (3) TOOLS-REGISTRY 213 tools across 4 repos (usability of everything, for all 9 agents), (4) honest freshness thresholds corrected (sovereign-pulse = 4+4/day crons :17/:47). Zero money, zero keys, zero vaults.",
    "evidence": "saos-dex main 3d19a97 (builder+BUILDQUEUE+146-tool map), saos-runtime main (sovereign-builder.yml), hub TOOLS-REGISTRY.md + tools-registry.json, dispatch 204, first CI build pending"
+  },
+  {
+   "repo": "saos-dex + saos-runtime",
+   "lane": "W4-volume-raise",
+   "agent": "z9",
+   "branch": "agent/z9/w4-volume (both repos; strict-FF to main, never forced)",
+   "baseBranch": "main",
+   "claimedAt": "2026-10-18T03:25:00Z",
+   "expiresAt": "2026-10-19T03:25:00Z",
+   "scope": "owner 'תמשיך ודחוף': plan 0.8/1.6/16 live (<= W2 code caps 1.0/2.0/30), arb-tilt (DEX arb steers army ladders, fail-open), fleet-fuel 1.8/1.2/14.4 EXECUTED (13.958 STEEM, 12 txids, all owner-named accounts), army openOrders 4->18 under cap-16, selftest 30/30. Self-truth fix recorded: my 'W2 raise missing from main' claim was wrong (stale local main) — corrected in commit message before push.",
+   "evidence": "saos-dex main 9a7792f; saos-runtime main (fleet-fuel W4); army-public.json cap:16 openOrders:18; FLEET-FUEL-RECEIPT EXECUTED 12 transfers"
   }
  ]
 }
