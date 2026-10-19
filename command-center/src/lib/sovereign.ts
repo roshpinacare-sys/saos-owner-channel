@@ -97,6 +97,7 @@ export type ArmyPublic = {
   acted: number
   stasis: number
   halted: number
+  aided?: number
   estateOpenOrders: number
   estateLockedSteem: number
   estateCapSteem: number

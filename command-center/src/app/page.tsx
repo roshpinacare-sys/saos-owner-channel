@@ -400,6 +400,12 @@ export default function Home() {
                     <span>locked {fmtN(data.army.data.estateLockedSteem)} STEEM</span>
                     <span>cap {fmtN(data.army.data.estateCapSteem)}</span>
                   </div>
+                  {typeof data.army.data.aided === 'number' && (
+                    <div className="flex items-center gap-1.5 rounded-lg bg-teal-950/40 px-2 py-1.5 text-[10px] text-teal-300">
+                      <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-teal-400" />
+                      גוף-אחד (W13): {data.army.data.aided} העברות-עזרה-הדדית במחזור-זה · דלק זורם סוחר↔סוחר
+                    </div>
+                  )}
                   <div>
                     <div className="mb-1 text-[10px] text-zinc-400">קבלות אחרונות</div>
                     <div className="max-h-32 space-y-1 overflow-y-auto font-mono text-[10px] text-zinc-400" dir="ltr" style={{ scrollbarWidth: 'thin' }}>
