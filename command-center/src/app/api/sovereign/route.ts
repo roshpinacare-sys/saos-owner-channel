@@ -151,11 +151,44 @@ export async function GET() {
     if (!e.run || r.created_at > e.run.created_at) e.run = r
     if (r.conclusion === "failure" && new Date(r.created_at).getTime() > dayAgo) e.fails24h++
   }
+  // W12 backfill: איבר שהריצות שלו מחוץ לעמוד-ה-100 (היסטוריה-ארוכה/עמוד-צפוף) לא יוצג
+  // עוד כ"לא-נצפה" — שולפים לו את הריצה-האחרונה ישירות (per-organ, לרוב 0-2 קריאות)
+  const pageSeen = new Set(runs.map((r) => r.name))
+  const missing = ORGAN_NAMES.filter((n) => !pageSeen.has(n))
+  if (missing.length > 0) {
+    const backfilled = await Promise.all(
+      missing.map(async (n) => {
+        try {
+          const d = await ghApi<{ workflow_runs: WorkflowRun[] }>(
+            `/repos/roshpinacare-sys/saos-runtime/actions/workflows/${n}.yml/runs?per_page=3`,
+          )
+          return d.workflow_runs ?? []
+        } catch {
+          return [] as WorkflowRun[]
+        }
+      }),
+    )
+    for (const list of backfilled) {
+      for (const r of list) {
+        const e = organMap.get(r.name)
+        if (!e) continue
+        if (!e.run || r.created_at > e.run.created_at) e.run = r
+        if (r.conclusion === "failure" && new Date(r.created_at).getTime() > dayAgo) e.fails24h++
+      }
+    }
+  }
   const organs = [...organMap.entries()].map(([name, { run, fails24h }]) => {
     const age = run ? Math.round((Date.now() - new Date(run.created_at).getTime()) / 1000) : null
     const fresh = ORGAN_FRESHNESS_SEC[name] ?? 93600
+    // W12 כנות: מסקנת-הריצה נכנסת-לפסק — ריצה-שנפלה היא "נפל" (אדום) גם-אם-היא-חדשה,
+    // ריצה-חיה היא "רץ" (כחול-ענבר) — גיל-בלבד הציג חי על-ריצות-אדומות.
     const verdict =
-      !run ? "never-seen" : age !== null && age <= fresh ? "fresh" : age !== null && age <= fresh * 1.6 ? "aging" : "stale"
+      !run ? "never-seen"
+      : run.status !== "completed" ? "running"
+      : run.conclusion && run.conclusion !== "success" ? "failed"
+      : age !== null && age <= fresh ? "fresh"
+      : age !== null && age <= fresh * 1.6 ? "aging"
+      : "stale"
     return {
       name,
       status: run?.status ?? null,

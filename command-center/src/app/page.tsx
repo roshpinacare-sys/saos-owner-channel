@@ -114,6 +114,10 @@ function verdictTone(v: string): { dot: string; text: string; label: string } {
       return { dot: 'bg-amber-400', text: 'text-amber-400', label: 'מזדקן' }
     case 'stale':
       return { dot: 'bg-rose-500', text: 'text-rose-400', label: 'איטי' }
+    case 'failed': // W12 כנות: ריצה-אחרונה-שנפלה = אדום גלוי (לא עוד "חי" על-גופה)
+      return { dot: 'bg-rose-500', text: 'text-rose-400', label: 'נפל' }
+    case 'running': // W12: ריצה-באוויר = ענבר-רץ
+      return { dot: 'bg-sky-400', text: 'text-sky-300', label: 'רץ' }
     default:
       return { dot: 'bg-zinc-500', text: 'text-zinc-400', label: 'לא-נצפה' }
   }
