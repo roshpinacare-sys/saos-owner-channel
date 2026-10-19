@@ -850,3 +850,22 @@ Stage Summary:
 - The estate cap law is no longer blind (55.9 real vs 0 reported), and the replace engine is alive — the book now re-prices with the mid instead of aging 7 days.
 - Verified fill flywheel already turning: hcsoldier4 +0.3 SBD between 05:16→05:32 receipts (sell fill → SBD → buy-1 leg lights at ≥0.5 threshold on next run).
 - Honest volume baseline: 23 chain-verified fills / 7.208 STEEM (volume-verify VERIFIED) — pre-W5-fuel; the 78-STEEM deployment + live replace engine is the measured multiplier path.
+
+---
+Task ID: W12c
+Agent: zai-code (main instance)
+Task: W12b follow-through — the first run where the fixed laws fired exposed the next latent layer; fix, verify end-to-end, close the activation loop
+
+Work Log:
+- RUN 39205910173 (05:42Z, first run on the W12 shape fix) measured THREE outcomes at once: (1) estateLockedSteem = 55.899 REAL (was 0 since birth) — the estate law sees; (2) siq ACTED with 2 creates → book rebuilt (the exact cancel-without-replace signature fixed); (3) hcsoldier4's buy-1 leg lit (SBD 0.567 ≥ 0.5 from a real fill — the fill→SBD→bid flywheel turns). BUT 4 replace actions failed with chain rejection "could not insert object, most likely a uniqueness constraint" — the deterministic orderid was still LIVE; the replace law had been dead since R323 (real_price always 0) so the latent constraint never showed. FIX (b2021ef1): replace = cancel-then-create in BOTH ladders (cancelTxid recorded; cancel-fail = honest error; next cycle's live planning heals).
+- W12-fix-3 (fb94a979): the estate cap law was REPORT-ONLY — plan.__estateLockedSteem was set only in selftest vectors, never in the run loop, so planning always saw room = 78. Now the accumulated real sum writes back before each account plans; the law binds exactly when the estate approaches its cap (68.4/78 measured).
+- RUN 34 (06:08Z, all three fixes live): verdict ARMY-ACTED, replaces=4 SUCCESS (0 failures — the same 4 legs that failed at 05:42Z), siq AT-TARGET, estateLocked 60.009.
+- FINAL LIVE AUDIT (06:27Z, condenser get_open_orders ×13): **13/13 soldiers with live orders — ZERO activation gaps.** 26 orders, 68.416 STEEM locked estate-wide (87.7% of the 78 cap), hyper-grid ladder 103.0→114.4m SBD/STEEM, siq rebuilt at 0.108/0.1144. Buy-side: fills→SBD→bid legs by design (hcsoldier4's bid already traded live).
+- Selftests held green through every step: army 46/46 · treasury 23/23 · one-body 13/13 · run.mjs PASS.
+- PUSHES: saos-dex 518075a1 (shape law) + b2021ef1 (replace cancel-then-create) + fb94a979 (estate binds planning) — all first-attempt after rebase over the fabric/learning-agent's parallel noise; hub 1833000 (worklog W12b).
+
+Stage Summary:
+- The W12 mandate's phase-1 ("קודם וודא הפעלה מרבית של כל הצי") is measured COMPLETE: 13/13 live-key soldiers, 13/13 live books, fuel 4.2–6.0 STEEM each, one-way custody rail + one-body mutual-aid rail wired, estate cap binding at planning time, replace engine alive, fill flywheel verified (fills→SBD→bids).
+- Three dead laws resurrected in one session (locked-shape, live-price, estate-bind) + one latent chain constraint fixed (replace over live orderid) — each root-caused from on-chain evidence, selftest-locked, pushed.
+- Volume path now honest: book re-prices every ~27min instead of aging 7 days; verified fill baseline 23 fills / 7.208 STEEM is pre-deployment — the 78-STEEM live book is the multiplier.
+- Phase-2 (DEX + more tools) remains per owner priority — the activation floor is now solid enough to build on.
