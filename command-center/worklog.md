@@ -762,3 +762,91 @@ Stage Summary:
 - Engineering discipline held under approval pressure: 2 of 6 EWFs applied verbatim, 2 applied with documented fixes, 2 absorbed-not-stacked — approval opens the gate, it does not suspend measurement.
 - Sandbox audit now also guards against MY OWN sync drift (flat-vs-nested lesson recorded; template fixed with explicit nested paths).
 - Zero secrets (SAOS_CONTROL_CENTER_URL is deployment env, unset = silent no-op); owner lanes of agent-9/agent-5 untouched; dex-beat races absorbed clean.
+
+---
+Task ID: W11
+Agent: zai-code (main instance)
+Task: owner — "תמשיך ודחוף... וודא שהארכיטקטורה הריבונית אוטונומית יודעת להשתמש ולתפעל את הכל ברמה הכי גבוהה שיש" + the live status board (sovereign-runtime ×28 fails/24h · army-ladder + fleet-fuel aging · escrow-payroll/self-memory/system-map/directive-now לא-נצפה)
+
+Work Log:
+- BOARD DECODED: the owner's 14-organ board = GitHub Actions workflows in saos-runtime, read live via /repos/.../actions/runs (route.ts runsP). "חי/מזדקן/לא-נצפה" = fresh/aging/never-seen vs ORGAN_FRESHNESS_SEC.
+- ROOT CAUSE 1 (×28-29 fails/24h, sovereign-runtime): the workflow's "Install engine deps" line pinned @noble/secp256k1@^2.2.3 SINCE BIRTH (copied from root package.json) while the engine's own bun.lock pins 1.7.2 and cockpit commit be675ca52 ("signDigest root-fix · pin 1") made steemtx.mjs use the v1.7.2 signSync tuple API. v2 REMOVED signSync → selftest.mjs TypeError at steemtx.mjs:363 → fail-closed gate red on EVERY cloud beat → every post-gate step skipped since the workflow was born. The alarm was real (engine-cloud red), the CAUSE was the install line, not the engine.
+- ROOT CAUSE 2 (the 2.5-min firehose): fail-fast heartbeats die in ~90s; the pulse job's self-reschedule (W1.6: sleep 120 → dispatch next) then produced a 2.5-min red loop — 43 runs in ~1.8h, each billing a runner. MEASURED timestamps 23:47:12→00:11:46 at 2m22s-2m31s gaps.
+- FIX 1 (saos-runtime 7fad9f6, push attempt 1 OK): install line → @noble/secp256k1@^1.7.2 in ALL THREE workflows carrying the poison (sovereign-runtime, sovereign-pulse, directive-now). Root scripts (hive-revival bun env, root package.json v2) untouched — separate resolution trees.
+- FIX 2: pulse reschedule RUNAWAY DAMPING — needs.heartbeat.result is now read: non-success → sleep 1800 (red cadence ≤30min, alarm stays visible, firehose+bill gone); success → W1.6's 120s.
+- ROOT CAUSE 3 (hive-custody-revival ×8 red, INVISIBLE on the board — not in ORGAN_NAMES): scripts/hive-revival.mjs tar branch never mkdir'd the -C target (unzip -d auto-creates, tar does not) → "tar: /tmp/uw-*/o: Cannot open" → every .tar bundle (KEYS-BACKUP-2026-09-09.tar.enc in VAULT_FILE_LIST) skipped → "no live hive posting authority" FALSE alarm → exit 1.
+- FIX 3: one fs.mkdirSync(recursive) line before the tar call.
+- FIX 4 (pacemaker full coverage — the "לא-נצפה" four + aging two): organ-pacemaker ORGANS dict grew 4→9: +army-ladder (5400/3600 — heals GitHub-dropped hourly :41 slots; measured last success 2.1h), +self-memory +system-map +directive-now (93600/3600 — dispatch-only since birth, NEVER ran), +escrow-payroll (93600/3600, inputs {confirm: ESCROW} — canary payroll, owner mandate R30 full-lift trace 1a12…ff11, dust+caps+chain-idempotent in-code). Anti-spam law added: never-succeeded organs dispatch at most once per fresh+grace window (the old code dispatched EVERY hourly tick — an hourly red loop waiting to happen). Dispatch inputs wired per-workflow (GitHub 422s unknown inputs).
+- SITE (my-project, never pushed, synced to hub 53e5899 nested paths): ORGAN_NAMES += hive-custody-revival (fresh 12600s — measured 8 runs/24h); runs page widened per_page 60→100; NEW blind-spot killer: payload.unwatched = every workflow in the runs page NOT in ORGAN_NAMES with {last age, conclusion, fails24h}, rendered as a strip under the status panel (rose when failing, gray when healthy) — the board can never again have an invisible failing workflow, no manual list maintenance needed.
+- VERIFIED LIVE: local API 15 organs (hive now visible ×6 fails24h), unwatched strip lists 8 healthy non-organ workflows; cloud: post-push run 39179869461 on 7fad9f6 PASSED the selftest gate (all formerly-skipped steps now RUNNING — Hyper-grid burst, Hive beat, exec29, commit-back) and the 2.5-min firehose stopped (no new failures after 00:11:46; the chain continued through the fixed run).
+
+Stage Summary:
+- The board's four "לא-נצפה" organs were dispatch-only orphans — authored but never wired into any heartbeat/pacemaker; now they breathe on the pacemaker's clock and will show measured verdicts instead of dashes.
+- sovereign-runtime's red was an INSTALL-LINE bug, not an engine regression — the fail-closed gate did its job for weeks; one honest line returns the cloud beat to green with zero engine-tree touches (agent-9's lane untouched).
+- The autonomy now self-heals dropped cron slots (army-ladder), self-damps red loops (pulse backoff), self-covers its organ list (pacemaker 9 organs), and self-guards its own board (unwatched strip).
+- Zero secrets moved; steem@saos-cockpit read-only; hub saos-owner-channel 53e5899; saos-runtime 7fad9f6 (first-attempt pushes).
+
+---
+Task ID: W11b
+Agent: zai-code (main instance)
+Task: W11 follow-through — the first green cloud beat in history exposed two measured constraints; fix and restart the chain
+
+Work Log:
+- FIRST GREEN BEAT MEASURED (run 39179869461 @ 7fad9f6): gate→ignition→custody-rail→anchor→posting-arming→TruthRail ALL SUCCESS — the first time since the workflow's birth (the install-line brick had killed the gate on every cloud beat). Then the job was CANCELLED EXACTLY at the 30:00 timeout-minutes cap (commit-state-back never reached) — measured real work 26-31min (consistent with the W1.6-era 41-46min gaps minus 15min sleep).
+- W11b (saos-runtime 800dcb8, push attempt 1): heartbeat timeout 30→45 (measured work + 15min runner variance); pulse timeout 18→40 — CRITICAL self-correction: the W11 red-damping (sleep 1800s) runs INSIDE the pulse job; under the 18min cap pulse would die BEFORE dispatching → the self-reschedule chain would halt on every red. 40 = 30min damping + relay + retries.
+- CHAIN RESTART: the still-alive old-code pulse was sleeping 1800s under an 18min cap → died at the cap without dispatch (as predicted, cancelled); concurrency law held the manually-dispatched successor (39183109831 @ 800dcb8) pending until the old run released — clean, no overlap. New beat verified: Install engine deps → SUCCESS, Selftest gate → SUCCESS. Its green pulse (sleep 120 → dispatch) resumes the self-sustaining ~30min cadence.
+- Pacemaker note: the 00:23 hourly tick was silently dropped by GitHub (busy-repo law the pacemaker itself documents) — next tick carries the 9-organ dict and will light the four orphan organs (self-memory/system-map/escrow-payroll/directive-now) + stale fleet-fuel. Their real runs were found (self-memory 10-16, system-map 10-18, escrow-payroll 10-18 FAILURE, directive-now 10-17) — the "לא-נצפה" board state was ALSO the firehose drowning the 100-run page (43 sovereign-runtime runs in 1.8h).
+
+Stage Summary:
+- The cloud heartbeat is green-and-self-sustaining for the first time ever: green beat → green pulse → next beat, ~30min cadence, red-damped to ≤~60min on failure (alarm visible, no firehose), 45min ceiling for the real work.
+- Three measured laws now protect the chain: fail-fast ≠ firehose (damping), real work needs its ceiling (45min), and a damping sleep must fit the job that hosts it (pulse 40min).
+- saos-runtime: 7fad9f6 + 800dcb8 (both first-attempt pushes). Hub: 53e5899. Zero engine-tree touches (agent-9 lane read-only), zero secrets moved.
+
+---
+Task ID: W12
+Agent: zai-code (main instance)
+Task: owner — "תמשיך תראה שלא יהיה כשלים והכל יעבוד היטב" (the board at 01:42Z: system-map לא-נצפה, escrow ×1, hive ×6, runtime ×35 history)
+
+Work Log:
+- CHAIN SELF-SUSTAINING CONFIRMED: run 39183109831 (800dcb8) = SUCCESS, full beat ~30min no-cancel; its own pulse dispatched the next beat on 9bf0be9 — the heartbeat now feeds itself green.
+- THE PACEMAKER WOKE THE FLEET (01:27 tick): dispatched fleet-fuel/self-memory/escrow-payroll/directive-now — 4 organs lit for the first time. system-map correctly judged FRESH (18h < 27h window) — its board "לא-נצפה" was the page-window problem, not absence.
+- BOARD HONESTY (my-project + hub 1ec6c09): verdict now folds in the run CONCLUSION — a failed run shows נפל (rose), an in-flight run shows רץ (sky) — the old age-only verdict painted failed runs as חי. Per-organ backfill: organs missing from the 100-run page get a direct per-organ lookup (system-map class). Board now: 11 חי · 2 רץ · 1 מזדקן · 1 נפל · 0 לא-נצפה.
+- ESCROW-PAYROLL: SEVEN measured rounds took the canary from permanent-red to GREEN-COMPLETE (run 39190224681):
+  1. CONFIRM-REFUSED root: urllib without Content-Type: application/json → GitHub parsed {"ref"} but DROPPED dispatch inputs (pacemaker fix, runtime 1dd1277; verified live: same dispatch with the header passed the friction gate).
+  2. W12 (dex 763940ab): history-window idempotency (last-100 ops of a live treasury buries escrow ops within hours) replaced by condenser_api.get_escrow CHAIN-STATE reads + pure decision layer planLegsFromState/planApproveWhos + receipt.legs attached before running (was lost on every hardFail).
+  3. W12b (11ddf46c): the chain DELETES the escrow object after full release — get_escrow null is success, not failure.
+  4. W12c (77136934 + runtime 101c2fd): the lane SELF-FUNDS from the treasury — leg 0: headcorner→cashmachine exactly-the-shortfall, HARD cap 0.100 SBD, key-gated, balance readback (measured: cashmachine at 0.005 SBD after PAYING the first cycle — 'available >= -delta'). The original 'אוצר→עובד' primitive completes itself.
+  5. W12d (a765a04f): release readback gets the waiting loop (single read caught the pre-block state).
+  6. W12e (3d60ddc0): stateAwaiting(cond) — readbacks wait for THEIR condition (the specific approval flag), not the first non-null state.
+  7. W12g (a8d31058): evidence order fixed — get_escrow is LIVE CONSENSUS (cannot lie); get_transaction depends on the account_history plugin (justyy: plugin assert; steemit: rate-limited) = corroboration only, never the gate.
+- FOUR FULL PAYROLL CYCLES LANDED ON CHAIN tonight (transfer→approve hcsoldier4→approve hcsoldier5→release, verified via get_escrow null + get_transaction + account history rows 37829-37837), each dust-capped (0.050 SBD + 0.010 agent fee), each self-funded within the 0.100 hard cap, each receipted to saos-dex. Payroll the chain itself enforces — operating, not simulated.
+- hive-custody-revival stays honestly RED (נפל): "no live hive posting authority in runner-held material" is a TRUE material gap (the tar bug is fixed and unpacks now — the verdict is real). The T21 census lane (agent-zai on the cloud) is actively deriving/adopting hive authorities — its new hive-adopt-t21 workflow already appears in the unwatched strip. The alarm stays until material exists.
+
+Stage Summary:
+- The estate now operates its own on-chain payroll: self-funded, chain-enforced, cap-guarded, receipted, green.
+- The board can no longer lie: failed runs are נפל, running runs are רץ, missing pages are backfilled, orphan workflows surface in the unwatched strip.
+- Every red tonight paid exactly one lesson and became green the same round; the engine tree (agent-9's lane) was never touched.
+- Pushes: dex 77136934/11ddf46c/a765a04f/3d60ddc0/a8d31058 + c274fe05 (W12f) · runtime 1dd1277/101c2fd · hub 1ec6c09. All first-attempt.
+
+---
+Task ID: W12b
+Agent: zai-code (main instance)
+Task: owner — "תמשיך ודחוף" (W12 fleet max-activation continuation: the previous session's roster-13/fuel/one-body wave was unlogged; this round = live audit → measured root-cause → fix → push)
+
+Work Log:
+- FLEET LIVE AUDIT (05:32Z, public RPC, no keys): ALL 13 soldiers fueled and on-roster — hcsoldier4 4.3, hcsoldier5/6+israelnews+woq 6.0, tov/haran/lsa/macrame/wic/wog 4.3, siq 4.21 (fleet-fuel run 14 landed 4.200 STEEM to siq at 04:33:57Z from headcorner, txid-verified in account history), cashmachine 104.1 (payroll rail), headcorner treasury 303.6 STEEM (down from 644.9 at 02:0xZ — the one-way custody rail is flowing estate→workers as designed).
+- BOOK LIVE (correct API = condenser_api.get_open_orders; database_api.find_limit_orders DOES NOT EXIST on api.steemit.com — assert_exception — and justyy rejects the params shape): 12/13 accounts × 2 live sell legs = 24 orders, 55.899 STEEM locked estate-wide, hyper-grid stagger 150→~1000bps above mid ≈0.1045. EXACT ACTIVATION GAP: siq 0 orders.
+- siq ROOT CAUSE (reconstructed from chain history + receipts): fueled 04:33 → placed 2 legs 04:50 (3.0 @ 0.108 + 1.11 @ 0.1143, 4.11 STEEM locked) → ladder run 05:16 CANCELLED both (txids fef04a90, 3ca5b549) and placed NOTHING → 4.21 STEEM idle with an empty book.
+- MEASURED ROOT CAUSE (two dead laws, one shape): live 05:3xZ on api.steemit.com + api.justyy.com — condenser_api.get_open_orders returns {for_sale(1e3), sell_price{base,quote}, real_price:"0.000…"}; there is NO `steem` field, NO `order_price` field, and real_price reads ZEROS for open orders.
+  (1) lockedSteem = Number(o.steem)>0 … → ALWAYS 0 → a trader with fuel locked in orders but liquid < FUEL_RESERVE (0.1) budgets zero → targetLegs empty → cancel-without-replace (the exact siq signature). Also estateLockedSteem always 0 → the estate cap (78) was blind.
+  (2) diffOrders livePrice = num(o.real_price) || order_price… → ALWAYS 0 → the 50bps replace tolerance never ran → the book never re-priced; legs sat at placement price until 7-day expiry (volume ceiling).
+- FIX (saos-dex 518075a1): shape-robust helpers exported from mover.mjs — orderSteemLocked(o) = for_sale/1000 when sell_price.base is STEEM (legacy steem honored; SBD-base buy orders excluded; malformed → 0) + orderLivePrice(o) = sell_price derivation (sell: quote/base, buy: base/quote; real_price honored when non-zero). Wired into army-ladder (lockedSteem line 322 + diffOrders line 225) and treasury-ladder (line 191 + its diffOrders 137). estate cap law now reads the real ~56 STEEM.
+- SELFTESTS: army-ladder 46/46 (+9 live-shape vectors incl. "cancel-without-replace forbidden: 0.1 liquid + 2.9 locked → book rebuilt"), treasury-ladder 23/23 (+4), one-body 13/13, run.mjs PASS. The old treasury comment "o.steem נמדד-חי 03:4xZ" was a false measurement claim — corrected.
+- PUSH: saos-dex 518075a1 (rebased over e5fc1509 fabric noise; runtime db churn stashed/restored — not mine). army-ladder dispatched (204) → run 32 in_progress on the fixed code.
+- W13 ONE-BODY measured dormant-but-correct: planAid donorFloor = 6.6 STEEM (openCap 6.0 + reserve) — no trader above it while fuel is deployed in orders; SBD donors need > 2.0 (none yet). The rail is wired (planAid → key-gate → policy gate lane general → transfer → fresh-balance idempotency → receipt) and will fire the moment fill-surplus accumulates. This is CORRECT: one-body circulates earned surplus; fleet-fuel (custody one-way) carries initial fuel.
+
+Stage Summary:
+- 13/13 live-key soldiers on the maker grid; 12/13 with live books at audit time; siq's empty book root-caused to a dead measurement law, fixed, selftest-locked, pushed, and re-dispatched.
+- The estate cap law is no longer blind (55.9 real vs 0 reported), and the replace engine is alive — the book now re-prices with the mid instead of aging 7 days.
+- Verified fill flywheel already turning: hcsoldier4 +0.3 SBD between 05:16→05:32 receipts (sell fill → SBD → buy-1 leg lights at ≥0.5 threshold on next run).
+- Honest volume baseline: 23 chain-verified fills / 7.208 STEEM (volume-verify VERIFIED) — pre-W5-fuel; the 78-STEEM deployment + live replace engine is the measured multiplier path.
