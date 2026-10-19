@@ -435,6 +435,9 @@ export const ORGAN_NAMES = [
   "self-memory",
   "system-map",
   "directive-now",
+  // W11: hive-custody-revival היה עיוורון-מלא בפאנל — כשל ×8/24h ואף שורה לא הציגה אותו.
+  // החוק החדש: כל-workflow-שנופל חייב להיות נראה (וגם פאנל unwatched למטה מגן מפני-עיוורונות עתידיים).
+  "hive-custody-revival",
 ] as const
 
 // קצבים נמדדים (W1.5/W2): beat 39–46 דק' → fresh 4500s; ladders שעתיים;
@@ -454,4 +457,6 @@ export const ORGAN_FRESHNESS_SEC: Record<string, number> = {
   "self-memory": 93600,
   "system-map": 93600,
   "directive-now": 93600,
+  // W11 נמדד: 8 ריצות/24h ≈ כל-3h (dispatch-driven) → fresh 3.5h; מזדקן-מעל 5.6h
+  "hive-custody-revival": 12600,
 }

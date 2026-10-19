@@ -61,6 +61,7 @@ type SovereignData = {
   makers: { ok: boolean; error?: string; top?: Array<{ name: string; fills: number; volMu: number; lastH: number }> }
   policies: { ok: boolean; data?: null | { at?: string; authority?: string; gears?: unknown[] } }
   organs: Organ[]
+  unwatched?: Array<{ name: string; at: string | null; conclusion: string | null; ageSec: number | null; fails24h: number }>
   hub: { ok: boolean; error?: string; data?: unknown }
   digest: { ok: boolean; error?: string; data?: unknown }
   feed?: { ok: boolean; error?: string; data?: Array<{ repo: string; sha: string; msg: string; at: string | null; url: string }> }
@@ -306,6 +307,30 @@ export default function Home() {
                   )
                 })}
               </div>
+              {/* W11 רתימת-עיוורון: workflows מחוץ לרשימת-האיברים — כל-כשל/גיל חריג נראה כאן מיד */}
+              {data.unwatched && data.unwatched.length > 0 ? (
+                <div className="mt-3 rounded-lg border border-amber-900/40 bg-amber-950/20 p-2.5">
+                  <div className="mb-1 text-[10px] text-amber-400">
+                    לא-מפוקחים ({data.unwatched.length}) — workflows פעילים מחוץ לרשימת-האיברים · כל-כשל שלהם נראה כאן
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {data.unwatched.map((u) => (
+                      <span
+                        key={u.name}
+                        className={`rounded border px-1.5 py-0.5 font-mono text-[9px] ${
+                          u.fails24h > 0
+                            ? 'border-rose-800/60 bg-rose-950/40 text-rose-300'
+                            : 'border-zinc-800 bg-black/30 text-zinc-500'
+                        }`}
+                        title={`${u.name} · ${u.conclusion ?? '—'} · ${ageHe(u.ageSec)}`}
+                      >
+                        {u.name}
+                        {u.fails24h > 0 ? ` ×${u.fails24h}` : ''}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </Panel>
 
             {/* כלכלה */}

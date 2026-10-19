@@ -77,7 +77,7 @@ export async function GET() {
     panel(rawFile("saos-dex", "db/maker-stats.json").then((j) => j as MakerStats), "maker-stats"),
     panel(rawFile("saos-dex", "db/grid-public.json"), "grid-public"),
     panel(
-      ghApi<{ workflow_runs: WorkflowRun[] }>(`/repos/roshpinacare-sys/saos-runtime/actions/runs?per_page=60`).then(
+      ghApi<{ workflow_runs: WorkflowRun[] }>(`/repos/roshpinacare-sys/saos-runtime/actions/runs?per_page=100`).then(
         (d) => d.workflow_runs,
       ),
       "workflow-runs",
@@ -169,6 +169,26 @@ export async function GET() {
     }
   })
 
+  // W11 רתימת-עיוורון: כל-workflow בעמוד-הריצות שאינו ברשימת-האיברים — נצפה כאן.
+  // hive-custody-revival כשל ×8/24h ואף שורה בפאנל לא ידעה עליו — זה לא יקרה שוב:
+  // כל-עתידי לא-מפוקח עם כשלים/גיל חריג יופיע כאן מיד, בלי תלות בעדכון רשימה ידנית.
+  const organSet = new Set<string>(ORGAN_NAMES)
+  const unwatched = [...new Set(runs.map((r) => r.name))]
+    .filter((n) => !organSet.has(n))
+    .map((n) => {
+      const list = runs.filter((r) => r.name === n)
+      const latest = list[0]
+      const fails = list.filter((r) => r.conclusion === "failure" && new Date(r.created_at).getTime() > dayAgo).length
+      return {
+        name: n,
+        at: latest?.created_at ?? null,
+        conclusion: latest?.conclusion ?? null,
+        ageSec: latest ? Math.round((Date.now() - new Date(latest.created_at).getTime()) / 1000) : null,
+        fails24h: fails,
+      }
+    })
+    .sort((a, b) => (b.fails24h ?? 0) - (a.fails24h ?? 0))
+
   // כלכלה: Σ credits + נזילות
   const snap = snapP.data
   const credits = snap?.state?.credits ?? {}
@@ -218,6 +238,7 @@ export async function GET() {
       : { ok: false, error: makersP.error, at: makersP.at },
     policies: policiesP,
     organs,
+    unwatched,
     hub: claimsP,
     digest: digestP,
     feed: feedP,
