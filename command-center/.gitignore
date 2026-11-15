@@ -1,14 +1,87 @@
-# command-center — exclusions
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
 node_modules
-.next
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
 .env*
-upload/
-db/
-skills/
-dev.log
-dev.out.log
-*.pid
-server.log
+
+# vercel
+.vercel
+
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+local-*
 .claude
 .z-ai-config
-tool-results/
+*.log
+dev.log
+dev.out.log
+test
+prompt
+
+server.log
+# Skills directory
+/skills/
+# ── sovereignty hard exclusions (secrets & local ops trees never leave the box) ──
+/upload/
+/fleet/
+/fleet-restore/
+/tmp-*/
+/work/
+/zip-clone/
+/tool-results/
+/.zscripts/
+/examples/
+/mini-services/
+/scripts/
+.env
+.env.*
+*.secret
+*.secret.*
+
+# wipe24 + custody hygiene: local-only material never reaches the public remote
+.local-preserve/
+.env
+.env.bak
+/db/
+/prisma/
+/scripts/
+/tool-results/
+/.zscripts/
+/tests/
+/examples/
+/download/
+/mini-services/
+fleet/.secrets/
+fleet/.crown-pass-v6
+fleet/.crown-pass*

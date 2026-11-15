@@ -14,25 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "מרכז-הפיקוד הריבוני · SAOS",
-  description: "מרכז-הפיקוד החי של הריבונות האוטונומית — כלכלה, צבא-ה-12, DEX, איברי-ענן ונזילות בזמן-אמת.",
-  keywords: ["Z.ai", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "AI development", "React"],
-  authors: [{ name: "Z.ai Team" }],
-  icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
-  },
-  openGraph: {
-    title: "מרכז-הפיקוד הריבוני · SAOS",
-    description: "AI-powered development with modern React stack",
-    url: "https://chat.z.ai",
-    siteName: "Z.ai",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "מרכז-הפיקוד הריבוני · SAOS",
-    description: "AI-powered development with modern React stack",
-  },
+  title: "SOVEREIGN DESK — roshpinacare-sys",
+  description: "Live sovereign operations desk: treasury, army ladder, DEX, power-down ledger. Live data only — every number carries its source.",
+  keywords: ["sovereign", "steem", "dex", "market-making", "live"],
+  authors: [{ name: "roshpinacare-sys" }],
 };
 
 export default function RootLayout({
@@ -41,10 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
-      >
+    <html lang="he" dir="ltr" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}>
         {children}
         <Toaster />
       </body>

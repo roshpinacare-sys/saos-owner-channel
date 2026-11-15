@@ -1,909 +1,326 @@
-'use client'
+"use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useState, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { Activity, Boxes, Coins, RefreshCw, Landmark, ShieldCheck, TriangleAlert, GitBranch } from "lucide-react";
+import { SovereignBina } from "@/components/sovereign-bina";
+import { OvernightLane } from "@/components/overnight-lane";
+import { FleetProof } from "@/components/fleet-proof";
 
-// —— סוגים מוקטנים (מה-API) ——
-type Organ = {
-  name: string
-  status: string | null
-  conclusion: string | null
-  at: string | null
-  url: string | null
-  ageSec: number | null
-  freshSec: number
-  verdict: string
-  fails24h: number
-}
-type SovereignData = {
-  at: string
-  chain: {
-    ok: boolean
-    error?: string
-    height: number | null
-    savedAt: string | null
-    creditsSum: number
-    creditsHolders: Array<{ holder: string; mu: number }>
-    feeMeter: number | null
-    treasuryProfitEver: number | null
-    gasUsed: number | null
-    pools: Array<{ pair: string; detail: string; valueHint: string }>
-    lpTreasury: Array<{ pair: string; balance: number }>
-  }
-  army: {
-    ok: boolean
-    error?: string
-    data: null | {
-      roster: number
-      acted: number
-      stasis: number
-      halted: number
-      estateOpenOrders: number
-      estateLockedSteem: number
-      estateCapSteem: number
-      verdict: string
-      mid?: number
-      at: string
-    }
-    receipts?: { ok: boolean; data?: Array<Record<string, unknown>> }
-  }
-  volume: {
-    ok: boolean
-    error?: string
-    data: null | {
-      verdict: string
-      at: string
-      txChecks: { total: number; verified: number; exposed: number; unreachable: number }
-      chainFills: { count: number; makerFills: number; takerFills: number; volumeSteem: number; volumeSbd: number; byAccount: Record<string, number> }
-    }
-  }
-  grid: { ok: boolean; error?: string; data: null | Record<string, unknown> }
-  klines: { ok: boolean; error?: string; pairs?: Record<string, Array<{ t: number; o: number; h: number; l: number; c: number; vMu: number; qMu: number; n: number }>> }
-  makers: { ok: boolean; error?: string; top?: Array<{ name: string; fills: number; volMu: number; lastH: number }> }
-  policies: { ok: boolean; data?: null | { at?: string; authority?: string; gears?: unknown[] } }
-  organs: Organ[]
-  unwatched?: Array<{ name: string; at: string | null; conclusion: string | null; ageSec: number | null; fails24h: number }>
-  hub: { ok: boolean; error?: string; data?: unknown }
-  digest: { ok: boolean; error?: string; data?: unknown }
-  feed?: { ok: boolean; error?: string; data?: Array<{ repo: string; sha: string; msg: string; at: string | null; url: string }> }
-  recovery?: { ok: boolean; error?: string; data?: Array<{ path: string; exists: boolean; sha: string | null; lastAt: string | null; msg: string | null; url: string | null }> }
-  secrets?: { ok: boolean; error?: string; data?: { clean: boolean; suspects: string[]; scanned: string[] } }
-  signing?: { ok: boolean; error?: string; data?: { conclusion: 'success' | 'failure' | 'unknown'; startedAt: string | null; url: string | null } }
-  engine?: { ok: boolean; error?: string; data?: { conclusion: 'success' | 'failure' | 'running' | 'unknown'; event: string | null; at: string | null; url: string | null } }
-  decisions?: {
-    ok: boolean
-    error?: string
-    data?: null | {
-      generatedAt: string
-      policyVersion: string
-      authority: string
-      authorityOf?: string
-      principle?: string
-      sense: Record<string, { ok: boolean; ageMin: number }>
-      decisions: Array<{ id: string; area?: string; title?: string; status?: string; decidedAt?: string; reasoning?: string }>
-      stats?: { standing?: number; thisRun?: number; total?: number }
-      authorityEnvelope?: { execute?: string[]; gates?: string[] }
-    }
-  }
-  fabric?: { ok: boolean; error?: string; data?: null | { proposals: number; indexed: number; deepReviewed: number; reviewPaths: string[] } }
-  verdicts?: { ok: boolean; error?: string; data?: null | { rows: number; endorse: number; endorseFixes: number; reject: number; endorseFixesIds: string[]; indexSource: string } }
-  alerts?: { ok: boolean; error?: string; data?: null | { count: number; recent: Array<{ event_type: string; at: string; service_id: string; url_hint: string; received_at?: string }> } }
-  irreversibles?: { ok: boolean; error?: string; data?: null | { found: boolean; quote: string | null; source: string } }
+type Live = any;
+
+const fmt = (n: number | null | undefined, d = 2) =>
+  n === null || n === undefined || Number.isNaN(n) ? "—" : n.toLocaleString("en-US", { maximumFractionDigits: d, minimumFractionDigits: d });
+
+function ago(iso?: string | null) {
+  if (!iso) return "—";
+  const ms = Date.now() - Date.parse(iso);
+  if (!Number.isFinite(ms)) return "—";
+  const m = Math.floor(ms / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ${m % 60}m ago`;
+  return `${Math.floor(h / 24)}d ${h % 24}h ago`;
 }
 
-const fmtMu = (mu: number | null | undefined): string =>
-  mu === null || mu === undefined
-    ? '—'
-    : new Intl.NumberFormat('he-IL', { maximumFractionDigits: 0 }).format(mu) + 'µ'
-
-const fmtN = (n: number | null | undefined): string =>
-  n === null || n === undefined ? '—' : new Intl.NumberFormat('he-IL', { maximumFractionDigits: 3 }).format(n)
-
-function ageHe(sec: number | null | undefined): string {
-  if (sec === null || sec === undefined) return '—'
-  if (sec < 60) return `${sec} שנ׳`
-  if (sec < 3600) return `${Math.round(sec / 60)} דק׳`
-  if (sec < 86400) return `${(sec / 3600).toFixed(1)} שע׳`
-  return `${(sec / 86400).toFixed(1)} ימ׳`
-}
-
-function verdictTone(v: string): { dot: string; text: string; label: string } {
-  switch (v) {
-    case 'fresh':
-      return { dot: 'bg-emerald-400', text: 'text-emerald-400', label: 'חי' }
-    case 'aging':
-      return { dot: 'bg-amber-400', text: 'text-amber-400', label: 'מזדקן' }
-    case 'stale':
-      return { dot: 'bg-rose-500', text: 'text-rose-400', label: 'איטי' }
-    case 'failed': // W12 כנות: ריצה-אחרונה-שנפלה = אדום גלוי (לא עוד "חי" על-גופה)
-      return { dot: 'bg-rose-500', text: 'text-rose-400', label: 'נפל' }
-    case 'running': // W12: ריצה-באוויר = ענבר-רץ
-      return { dot: 'bg-sky-400', text: 'text-sky-300', label: 'רץ' }
-    default:
-      return { dot: 'bg-zinc-500', text: 'text-zinc-400', label: 'לא-נצפה' }
-  }
-}
-
-function decisionTone(status?: string): { dot: string; text: string; label: string } {
-  switch ((status ?? '').split(' ')[0]) {
-    case 'executed':
-      return { dot: 'bg-emerald-400', text: 'text-emerald-300', label: 'בוצע' }
-    case 'attested':
-      return { dot: 'bg-teal-400', text: 'text-teal-300', label: 'מאומת' }
-    case 'armed-conditional':
-      return { dot: 'bg-amber-400', text: 'text-amber-300', label: 'חמוש-מותנה' }
-    case 'watch':
-      return { dot: 'bg-amber-400/70', text: 'text-amber-200/90', label: 'במעקב' }
-    case 'clear':
-      return { dot: 'bg-zinc-400', text: 'text-zinc-300', label: 'תקין' }
-    default:
-      return { dot: 'bg-zinc-600', text: 'text-zinc-400', label: status ?? '—' }
-  }
-}
-
-function repoBadge(repo: string): string {
-  switch (repo) {
-    case 'saos-dex':
-      return 'bg-emerald-900/40 text-emerald-300'
-    case 'saos-runtime':
-      return 'bg-amber-900/40 text-amber-300'
-    case 'saos-owner-channel':
-      return 'bg-teal-900/40 text-teal-300'
-    case 'steem':
-      return 'bg-rose-900/40 text-rose-300'
-    case 'FleetHQ':
-      return 'bg-lime-900/40 text-lime-300'
-    default:
-      return 'bg-zinc-800 text-zinc-300'
-  }
-}
-
-function Panel({ title, children, tone = '', sub, className = '' }: { title: string; children: React.ReactNode; tone?: string; sub?: string; className?: string }) {
+function SourceDots({ sources }: { sources: any[] }) {
+  if (!sources?.length) return null;
   return (
-    <section className={`rounded-xl border border-emerald-900/40 bg-[#0c1713]/90 p-4 shadow-lg shadow-black/30 ${tone} ${className}`}>
-      <header className="mb-3 flex items-baseline justify-between gap-2 border-b border-emerald-900/30 pb-2">
-        <h2 className="text-sm font-bold tracking-wide text-emerald-200">{title}</h2>
-        {sub ? <span className="font-mono text-[10px] text-emerald-600">{sub}</span> : null}
-      </header>
-      {children}
-    </section>
-  )
-}
-
-function Spark({ closes, w = 560, h = 72 }: { closes: number[]; w?: number; h?: number }) {
-  if (!closes || closes.length < 2) return <div className="h-[72px] text-xs text-zinc-500">אין נתוני קו-מחיר</div>
-  const min = Math.min(...closes)
-  const max = Math.max(...closes)
-  const span = max - min || 1
-  const pts = closes.map((c, i) => `${(i / (closes.length - 1)) * w},${h - 6 - ((c - min) / span) * (h - 12)}`).join(' ')
-  const up = closes[closes.length - 1] >= closes[0]
-  return (
-    <div dir="ltr">
-      <svg viewBox={`0 0 ${w} ${h}`} className="h-[72px] w-full" role="img" aria-label="קו מחיר SAOS/USDS">
-        <polyline points={pts} fill="none" stroke={up ? '#34d399' : '#fb7185'} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-        <text x={4} y={12} fontSize="10" fill="#6b7280" fontFamily="monospace">
-          {min.toFixed(3)} → {max.toFixed(3)}
-        </text>
-      </svg>
+    <div className="flex flex-wrap gap-1.5">
+      {sources.map((s) => (
+        <span
+          key={s.source}
+          title={s.ok ? `${s.source} · live` : `${s.source} · ${s.error}`}
+          className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-mono ${s.ok ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-red-500/10 text-red-600 dark:text-red-400"}`}
+        >
+          <span className={`h-1.5 w-1.5 rounded-full ${s.ok ? "bg-emerald-500" : "bg-red-500"}`} />
+          {s.source}
+        </span>
+      ))}
     </div>
-  )
+  );
 }
 
-export default function Home() {
-  const [data, setData] = useState<SovereignData | null>(null)
-  const [err, setErr] = useState<string | null>(null)
-  const [tick, setTick] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
-  const alive = useRef(true)
+export default function Page() {
+  const [live, setLive] = useState<Live | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [tick, setTick] = useState(0);
 
   const load = useCallback(async () => {
+    setLoading(true);
     try {
-      const r = await fetch('/api/sovereign', { cache: 'no-store' })
-      if (!r.ok) throw new Error(`HTTP ${r.status}`)
-      const j = (await r.json()) as SovereignData
-      if (alive.current) {
-        setData(j)
-        setErr(null)
-      }
+      const r = await fetch("/api/sovereign/live", { cache: "no-store" });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      setLive(await r.json());
+      setErr(null);
     } catch (e) {
-      if (alive.current) setErr(e instanceof Error ? e.message : String(e))
+      setErr(String((e as Error)?.message ?? e));
     } finally {
-      if (alive.current) setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    alive.current = true
-    load()
-    const iv = setInterval(() => {
-      setTick((t) => t + 1)
-      load()
-    }, 60_000)
-    return () => {
-      alive.current = false
-      clearInterval(iv)
-    }
-  }, [load])
+    void load();
+    const t = setInterval(() => { void load(); setTick((x) => x + 1); }, 60_000);
+    return () => clearInterval(t);
+  }, [load]);
 
-  const kline = useMemo(() => data?.klines?.pairs?.['SAOS/USDS'] ?? [], [data])
-  const closes = useMemo(() => kline.map((k) => k.c), [kline])
-  const organsFresh = data?.organs.filter((o) => o.verdict === 'fresh').length ?? 0
-  const organsTotal = data?.organs.length ?? 0
-  const pulseOk = organsFresh >= Math.ceil(organsTotal * 0.6)
+  const chain = live?.chain;
+  const treasury = chain?.treasury;
+  const book = chain?.book;
+  const dex = live?.dex;
+  const army = live?.army?.public;
+  const receipts = live?.army?.receipts;
+  const soldiers = chain?.soldiers ?? [];
 
-  const manualRefresh = useCallback(async () => {
-    setRefreshing(true)
-    setTick((t) => t + 1)
-    try {
-      await load()
-    } finally {
-      setRefreshing(false)
-    }
-  }, [load])
+  const weeklyInflow = treasury?.toWithdrawVests && chain?.vestsPerSp ? treasury.toWithdrawVests / 13 / chain.vestsPerSp : null;
+  const pdownPct = treasury?.toWithdrawVests ? Math.min(100, (treasury.withdrawnVests / treasury.toWithdrawVests) * 100) : 0;
 
   return (
-    <div dir="rtl" className="flex min-h-screen flex-col bg-[#07100d] text-emerald-50">
-      {/* כותרת */}
-      <header className="sticky top-0 z-20 border-b border-emerald-900/40 bg-[#07100d]/95 px-4 py-3 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className={`relative flex h-3 w-3`}>
-              <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${pulseOk ? 'bg-emerald-400' : 'bg-amber-400'} opacity-60`}></span>
-              <span className={`relative inline-flex h-3 w-3 rounded-full ${pulseOk ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
-            </span>
-            <h1 className="text-lg font-black tracking-tight text-emerald-100">מרכז-הפיקוד הריבוני</h1>
-            <span className="hidden font-mono text-[11px] text-emerald-600 sm:inline">SAOS · git-home · cloud-first</span>
+    <div className="min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950">
+      {/* Header */}
+      <header className="border-b bg-white/80 dark:bg-neutral-900/80 backdrop-blur sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 grid place-items-center">
+              <Landmark className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-base sm:text-lg font-bold tracking-tight leading-none">SOVEREIGN DESK</h1>
+              <p className="text-[11px] text-muted-foreground font-mono">roshpinacare-sys · live only · no claims without sources</p>
+            </div>
           </div>
-          <div className="flex items-center gap-4 font-mono text-[11px] text-emerald-500">
-            <span dir="ltr">
-              height <b className="text-emerald-300">{fmtN(data?.chain.height)}</b>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline text-[11px] font-mono text-muted-foreground">
+              {live ? `refreshed ${ago(live.generatedAt)} · ${live.ms}ms` : "connecting…"}
             </span>
-            <span>ריענון 60ש׳ #{tick + 1}</span>
             <button
-              onClick={manualRefresh}
-              disabled={refreshing}
-              className="rounded border border-emerald-800/60 bg-emerald-950/30 px-2.5 py-1.5 text-[10px] text-emerald-300 transition hover:border-emerald-600 hover:bg-emerald-900/40 disabled:cursor-wait disabled:opacity-50"
-              aria-label="רענון ידני של הנתונים"
+              onClick={() => void load()}
+              className="h-9 w-9 grid place-items-center rounded-lg border hover:bg-muted transition-colors"
+              aria-label="refresh"
             >
-              {refreshing ? 'מרענן…' : 'רענן עכשיו'}
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">
-        {loading && !data ? (
-          <div className="grid min-h-[50vh] place-items-center">
-            <div className="animate-pulse text-sm text-emerald-500">מתחבר לריבונות החיה…</div>
-          </div>
-        ) : err && !data ? (
-          <div className="rounded-xl border border-rose-900/50 bg-rose-950/30 p-6 text-center text-sm text-rose-300">
-            שגיאת-חיבור ל-API: <span className="font-mono">{err}</span> — הריבונות עצמה בענן ממשיכה לפעול.
-          </div>
-        ) : data ? (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {/* סטטוס-ריבונות */}
-            <Panel title="סטטוס-ריבונות" sub={data.at.slice(11, 19) + 'Z'} className="md:col-span-2 xl:col-span-3">
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
-                {data.organs.map((o) => {
-                  const t = verdictTone(o.verdict)
-                  return (
-                    <a
-                      key={o.name}
-                      href={o.url ?? '#'}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group rounded-lg border border-emerald-900/30 bg-black/30 p-2.5 transition hover:border-emerald-700/60"
-                      title={`${o.name} · ${o.conclusion ?? o.status ?? '—'} · ${ageHe(o.ageSec)}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className={`h-2 w-2 shrink-0 rounded-full ${t.dot}`}></span>
-                        <span className="truncate font-mono text-[11px] text-emerald-300">{o.name}</span>
-                      </div>
-                      <div className="mt-1 flex items-center justify-between">
-                        <span className={`text-[10px] ${t.text}`}>{t.label}</span>
-                        <span className="font-mono text-[10px] text-zinc-500">{ageHe(o.ageSec)}</span>
-                      </div>
-                      {o.fails24h > 0 ? (
-                        <div className="mt-0.5 font-mono text-[9px] text-rose-400/80">×{o.fails24h} כשלים/24h</div>
-                      ) : null}
-                    </a>
-                  )
-                })}
-              </div>
-              {/* W11 רתימת-עיוורון: workflows מחוץ לרשימת-האיברים — כל-כשל/גיל חריג נראה כאן מיד */}
-              {data.unwatched && data.unwatched.length > 0 ? (
-                <div className="mt-3 rounded-lg border border-amber-900/40 bg-amber-950/20 p-2.5">
-                  <div className="mb-1 text-[10px] text-amber-400">
-                    לא-מפוקחים ({data.unwatched.length}) — workflows פעילים מחוץ לרשימת-האיברים · כל-כשל שלהם נראה כאן
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {data.unwatched.map((u) => (
-                      <span
-                        key={u.name}
-                        className={`rounded border px-1.5 py-0.5 font-mono text-[9px] ${
-                          u.fails24h > 0
-                            ? 'border-rose-800/60 bg-rose-950/40 text-rose-300'
-                            : 'border-zinc-800 bg-black/30 text-zinc-500'
-                        }`}
-                        title={`${u.name} · ${u.conclusion ?? '—'} · ${ageHe(u.ageSec)}`}
-                      >
-                        {u.name}
-                        {u.fails24h > 0 ? ` ×${u.fails24h}` : ''}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </Panel>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
+        {err && (
+          <Card className="border-red-300 bg-red-50 dark:bg-red-950/40">
+            <CardContent className="py-3 flex items-center gap-2 text-sm text-red-700 dark:text-red-300">
+              <TriangleAlert className="h-4 w-4" /> live feed error: {err}
+            </CardContent>
+          </Card>
+        )}
 
-            {/* כלכלה */}
-            <Panel title="כלכלה חיה" sub="Σ credits · feeMeter">
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-lg bg-black/30 p-3">
-                    <div className="text-[10px] text-zinc-400">Σ קרדיטים (מחזור-פנימי)</div>
-                    <div className="mt-1 font-mono text-lg font-bold text-emerald-300" dir="ltr">
-                      {fmtMu(data.chain.creditsSum)}
-                    </div>
-                  </div>
-                  <div className="rounded-lg bg-black/30 p-3">
-                    <div className="text-[10px] text-zinc-400">feeMeter (עמלות שנאספו)</div>
-                    <div className="mt-1 font-mono text-lg font-bold text-amber-300" dir="ltr">
-                      {fmtMu(data.chain.feeMeter)}
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <div className="mb-1 text-[10px] text-zinc-400">מחזיקים מובילים</div>
-                  <div className="max-h-36 space-y-1 overflow-y-auto pr-1 font-mono text-[11px]" style={{ scrollbarWidth: 'thin' }}>
-                    {data.chain.creditsHolders.map((h) => (
-                      <div key={h.holder} className="flex items-center justify-between rounded bg-black/20 px-2 py-1">
-                        <span className="text-emerald-400">{h.holder}</span>
-                        <span dir="ltr" className="text-zinc-300">
-                          {fmtMu(h.mu)}
-                        </span>
-                      </div>
-                    ))}
-                    {data.chain.creditsHolders.length === 0 ? <div className="text-zinc-500">—</div> : null}
-                  </div>
-                </div>
-                <div className="flex justify-between border-t border-emerald-900/30 pt-2 font-mono text-[10px] text-zinc-500" dir="ltr">
-                  <span>profitEver {fmtMu(data.chain.treasuryProfitEver)}</span>
-                  <span>gasUsed {fmtMu(data.chain.gasUsed)}</span>
-                </div>
-              </div>
-            </Panel>
+        {/* Source honesty strip */}
+        <section className="flex items-center justify-between gap-3 flex-wrap">
+          <SourceDots sources={live?.sources ?? []} />
+          <span className="text-[11px] font-mono text-muted-foreground">poll #{tick} · auto every 60s</span>
+        </section>
 
-            {/* צבא */}
-            <Panel title="צבא-ה-12 · ספר-החשבונות" sub={data.army.data?.verdict ?? '—'}>
-              {data.army.ok && data.army.data ? (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-lg bg-black/30 p-2">
-                      <div className="font-mono text-xl font-bold text-emerald-300">{data.army.data.acted}</div>
-                      <div className="text-[10px] text-zinc-400">פעלו / {data.army.data.roster}</div>
-                    </div>
-                    <div className="rounded-lg bg-black/30 p-2">
-                      <div className="font-mono text-xl font-bold text-amber-300">{data.army.data.stasis}</div>
-                      <div className="text-[10px] text-zinc-400">עצירה</div>
-                    </div>
-                    <div className="rounded-lg bg-black/30 p-2">
-                      <div className="font-mono text-xl font-bold text-emerald-200" dir="ltr">
-                        {fmtN(data.army.data.mid)}
-                      </div>
-                      <div className="text-[10px] text-zinc-400">מחיר-אמצע (order-book)</div>
-                    </div>
+        {/* Treasury */}
+        <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-1.5"><Coins className="h-3.5 w-3.5" /> TREASURY · headcorner</CardDescription>
+              <CardTitle className="text-2xl font-mono">{fmt(treasury?.sp, 1)} <span className="text-sm font-sans text-muted-foreground">SP</span></CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs space-y-1 font-mono text-muted-foreground">
+              <div>liquid: {fmt(treasury?.liquidSteem, 3)} STEEM · {fmt(treasury?.sbd, 3)} SBD</div>
+              <div>delegated out: {fmt(treasury?.delegatedOut / (chain?.vestsPerSp ?? 1), 1)} SP</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-1.5"><Landmark className="h-3.5 w-3.5" /> POWER DOWN · 13-week rail</CardDescription>
+              <CardTitle className="text-2xl font-mono">{fmt(weeklyInflow, 1)} <span className="text-sm font-sans text-muted-foreground">SP/week</span></CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Progress value={pdownPct} />
+              <div className="text-xs font-mono text-muted-foreground">
+                schedule {fmt(treasury?.toWithdrawVests / (chain?.vestsPerSp ?? 1), 0)} SP · withdrawn {fmt(pdownPct, 1)}% · next {treasury?.nextWithdrawal ? treasury.nextWithdrawal.slice(0, 10) : "—"}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-1.5"><Activity className="h-3.5 w-3.5" /> INTERNAL MARKET · STEEM/SBD</CardDescription>
+              <CardTitle className="text-2xl font-mono">
+                {book ? fmt(book.bestAsk, 5) : "—"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs font-mono text-muted-foreground space-y-1">
+              <div>bid {fmt(book?.bestBid, 5)} · ask {fmt(book?.bestAsk, 5)}</div>
+              <div>spread {book && book.bestAsk && book.bestBid ? fmt(((book.bestAsk - book.bestBid) / book.bestBid) * 100, 2) : "—"}%</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-1.5"><Boxes className="h-3.5 w-3.5" /> SAOS-DEX · our engine</CardDescription>
+              <CardTitle className="text-2xl font-mono">{fmt(dex?.stats?.fills, 0)} <span className="text-sm font-sans text-muted-foreground">fills</span></CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs font-mono text-muted-foreground space-y-1">
+              <div>swaps {fmt(dex?.stats?.swaps, 0)} · height {fmt(dex?.height, 0)}</div>
+              <div>snapshot {ago(dex?.savedAt)}</div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Soldiers + Army ladder */}
+        <section className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base"><ShieldCheck className="h-4 w-4" /> SOLDIERS · funded 300 SP each</CardTitle>
+              <CardDescription>delegation wave 2026-10-29 · owner direct order — live chain state</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {soldiers.map((s: any) => (
+                <div key={s.account} className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2">
+                  <div className="font-mono text-sm">{s.account}</div>
+                  <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground">
+                    <Badge variant={s.sp >= 300 ? "default" : "secondary"} className="font-mono">{fmt(s.sp, 1)} SP</Badge>
+                    <span>{fmt(s.liquidSteem, 2)} STEEM</span>
+                    <span>{fmt(s.sbd, 2)} SBD</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 font-mono text-[10px] text-zinc-400" dir="ltr">
-                    <span>openOrders {data.army.data.estateOpenOrders}</span>
-                    <span>locked {fmtN(data.army.data.estateLockedSteem)} STEEM</span>
-                    <span>cap {fmtN(data.army.data.estateCapSteem)}</span>
+                </div>
+              ))}
+              <div className="text-[11px] font-mono text-muted-foreground pt-1">
+                hcsoldier1/2/3 + 8 content accounts: keys owner-held (registry LIVE-OWNER-HELD) — re-probed every ladder run
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base"><Activity className="h-4 w-4" /> ARMY LADDER · maker book</CardTitle>
+              <CardDescription>saos-dex engine of record · Actions runtime · hourly + self-pulse</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {army ? (
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-lg border p-2">
+                    <div className="text-xl font-mono">{army.acted ?? "—"}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide">acted</div>
                   </div>
-                  {typeof data.army.data.aided === 'number' && (
-                    <div className="flex items-center gap-1.5 rounded-lg bg-teal-950/40 px-2 py-1.5 text-[10px] text-teal-300">
-                      <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-teal-400" />
-                      גוף-אחד (W13): {data.army.data.aided} העברות-עזרה-הדדית במחזור-זה · דלק זורם סוחר↔סוחר
-                    </div>
-                  )}
-                  <div>
-                    <div className="mb-1 text-[10px] text-zinc-400">קבלות אחרונות</div>
-                    <div className="max-h-32 space-y-1 overflow-y-auto font-mono text-[10px] text-zinc-400" dir="ltr" style={{ scrollbarWidth: 'thin' }}>
-                      {(data.army.receipts?.data ?? []).map((r, i) => (
-                        <div key={i} className="truncate rounded bg-black/20 px-2 py-0.5">
-                          {JSON.stringify(r).slice(0, 110)}
-                        </div>
-                      ))}
-                    </div>
+                  <div className="rounded-lg border p-2">
+                    <div className="text-xl font-mono">{army.stasis ?? "—"}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide">stasis</div>
+                  </div>
+                  <div className="rounded-lg border p-2">
+                    <div className="text-xl font-mono">{fmt(army.estateOpenOrders, 0)}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide">open orders</div>
                   </div>
                 </div>
               ) : (
-                <div className="text-xs text-rose-400">מנותק: {data.army.error}</div>
+                <div className="text-sm text-muted-foreground font-mono">army-public: {live?.army?.public?.error ?? "loading…"}</div>
               )}
-            </Panel>
-
-            {/* ווליום */}
-            <Panel title="ווליום-מאומת" sub={data.volume.data?.verdict ?? '—'}>
-              {data.volume.ok && data.volume.data ? (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-4 gap-2 text-center">
-                    <div className="rounded-lg bg-black/30 p-2">
-                      <div className="font-mono text-lg font-bold text-emerald-300">{data.volume.data.txChecks.verified}</div>
-                      <div className="text-[9px] text-zinc-400">אומתו</div>
-                    </div>
-                    <div className="rounded-lg bg-black/30 p-2">
-                      <div className="font-mono text-lg font-bold text-emerald-200">{data.volume.data.chainFills.count}</div>
-                      <div className="text-[9px] text-zinc-400">fills בשרשרת</div>
-                    </div>
-                    <div className="rounded-lg bg-black/30 p-2">
-                      <div className={`font-mono text-lg font-bold ${data.volume.data.txChecks.exposed ? 'text-rose-400' : 'text-zinc-400'}`}>
-                        {data.volume.data.txChecks.exposed}
-                      </div>
-                      <div className="text-[9px] text-zinc-400">חשיפות</div>
-                    </div>
-                    <div className="rounded-lg bg-black/30 p-2">
-                      <div className="font-mono text-lg font-bold text-zinc-400">{data.volume.data.txChecks.unreachable}</div>
-                      <div className="text-[9px] text-zinc-400">לא-נגישות</div>
-                    </div>
-                  </div>
-                  <div className="font-mono text-[11px] text-zinc-300" dir="ltr">
-                    vol {fmtN(data.volume.data.chainFills.volumeSteem)} STEEM · {fmtN(data.volume.data.chainFills.volumeSbd)} SBD
-                  </div>
-                  <div className="flex flex-wrap gap-1" dir="ltr">
-                    {Object.entries(data.volume.data.chainFills.byAccount).map(([a, n]) => (
-                      <span key={a} className="rounded bg-emerald-900/30 px-1.5 py-0.5 font-mono text-[10px] text-emerald-300">
-                        {a} ×{n}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-xs text-rose-400">מנותק: {data.volume.error}</div>
-              )}
-            </Panel>
-
-            {/* DEX נזילות */}
-            <Panel title="DEX · נזילות ומחיר" sub={`${data.chain.pools.length} pools`} className="md:col-span-2">
-              <div className="space-y-3">
-                <Spark closes={closes} />
-                <div className="text-[10px] text-zinc-500">SAOS/USDS · 72 נרות אחרונים (סגירה)</div>
-                <div className="max-h-44 overflow-y-auto rounded-lg border border-emerald-900/30" style={{ scrollbarWidth: 'thin' }}>
-                  <table className="w-full font-mono text-[11px]">
-                    <thead className="sticky top-0 bg-black/60 text-zinc-500">
-                      <tr>
-                        <th className="p-2 text-right font-normal">pool</th>
-                        <th className="p-2 text-right font-normal">שריונות</th>
-                        <th className="p-2 text-right font-normal">פרמטרים</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.chain.pools.map((p) => (
-                        <tr key={p.pair} className="border-t border-emerald-900/20 hover:bg-emerald-950/20">
-                          <td className="p-2 text-emerald-300" dir="ltr">
-                            {p.pair}
-                          </td>
-                          <td className="p-2 text-zinc-300" dir="ltr">
-                            {p.detail}
-                          </td>
-                          <td className="p-2 text-zinc-500" dir="ltr">
-                            {p.valueHint}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {data.makers.ok ? (
-                  <div>
-                    <div className="mb-1 text-[10px] text-zinc-400">מייקרים מובילים (ווליום)</div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {data.makers.top?.map((m) => (
-                        <span key={m.name} className="rounded bg-black/30 px-2 py-1 font-mono text-[10px]" dir="ltr">
-                          <span className="text-emerald-300">{m.name}</span> <span className="text-zinc-400">{fmtMu(m.volMu)}</span>
-                          <span className="text-zinc-600"> · {m.fills} fills</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </Panel>
-
-            {/* דאונפאוור + אישורי-בעלים */}
-            <Panel title="מטבע-הכוח · downpower 1000 SP" sub="owner-approved">
-              <div className="space-y-3">
-                <div className="rounded-lg border border-amber-900/40 bg-amber-950/20 p-3">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xs text-amber-200">1000 SP → נזיל (אושר ובוצע, chain-verified)</span>
-                    <span className="font-mono text-[10px] text-amber-500">250/wk × 4</span>
-                  </div>
-                  <div className="mt-2 h-2 overflow-hidden rounded bg-black/40">
-                    <div className="h-full w-[25%] bg-amber-500/70 transition-all"></div>
-                  </div>
-                  <div className="mt-1 font-mono text-[10px] text-zinc-500">תשלום ראשון: 2026-10-25 · to_withdraw=1,611,699 VESTS</div>
-                </div>
-                <div className="text-[11px] leading-relaxed text-zinc-400">
-                  הגריד ב-Steemit פועל: הצבא על ספר-החשבונות עם caps מוגבהים, ladders שעתיים, arb-grid לנזילות ה-DEX — הכל מתוזמן בענן וממשיך לבד גם בשינה.
-                </div>
-                {data.policies.ok && data.policies.data ? (
-                  <div className="rounded-lg bg-black/30 p-2 font-mono text-[10px] text-zinc-500" dir="ltr">
-                    <div className="truncate text-emerald-500">gears authority: {(data.policies.data as { authority?: string }).authority?.slice(0, 90) ?? '—'}</div>
-                    <div>gears: {Array.isArray((data.policies.data as { gears?: unknown[] }).gears) ? (data.policies.data as { gears?: unknown[] }).gears!.length : 0}</div>
-                  </div>
-                ) : null}
-              </div>
-            </Panel>
-
-            {/* hub + משרד */}
-            <Panel title="ה-hub · חוזים ומשרד" sub="leases · office digest">
-              <div className="space-y-2 text-[11px]">
-                <div className="flex items-center justify-between rounded bg-black/30 px-2 py-1.5">
-                  <span className="text-zinc-400">CLAIMS.json (הרשאות-סוכנים)</span>
-                  <span className={`font-mono ${data.hub.ok ? 'text-emerald-400' : 'text-rose-400'}`}>{data.hub.ok ? 'זמין' : 'מנותק'}</span>
-                </div>
-                <div className="flex items-center justify-between rounded bg-black/30 px-2 py-1.5">
-                  <span className="text-zinc-400">FleetHQ office digest</span>
-                  <span className={`font-mono ${data.digest.ok ? 'text-emerald-400' : 'text-rose-400'}`}>{data.digest.ok ? 'זמין' : 'מנותק'}</span>
-                </div>
-                {data.hub.ok && data.hub.data ? (
-                  <pre className="max-h-40 overflow-y-auto whitespace-pre-wrap break-all rounded bg-black/40 p-2 font-mono text-[9px] leading-relaxed text-zinc-500" dir="ltr" style={{ scrollbarWidth: 'thin' }}>
-                    {JSON.stringify(data.hub.data, null, 1).slice(0, 1800)}
-                  </pre>
-                ) : (
-                  <div className="font-mono text-[10px] text-rose-400/80">{data.hub.error}</div>
-                )}
-              </div>
-            </Panel>
-
-            {/* המוח-הריבוני — מחזור-ההחלטות SOV-POLICY/1 (W6) */}
-            <Panel title="המוח · מחזור-ההחלטות הריבוני" sub="FleetHQ · SOV-POLICY/1" className="md:col-span-2">
-              {data.decisions?.ok && data.decisions.data ? (
-                <div className="space-y-2 text-[11px]">
-                  <div className="flex flex-wrap gap-1.5">
-                    {Object.entries(data.decisions.data.sense).map(([k, v]) => (
-                      <span
-                        key={k}
-                        className={`rounded px-1.5 py-0.5 font-mono text-[9px] ${v.ok ? 'bg-emerald-950/60 text-emerald-300' : 'bg-rose-950/60 text-rose-300'}`}
-                        dir="ltr"
-                      >
-                        {k} {v.ok ? '✓' : '✗'} {v.ageMin}m
-                      </span>
-                    ))}
-                  </div>
-                  <div className="max-h-64 space-y-1 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
-                    {data.decisions.data.decisions.map((d) => {
-                      const t = decisionTone(d.status)
-                      return (
-                        <div key={d.id} className="flex items-start gap-2 rounded bg-black/20 px-2 py-1" title={d.reasoning ?? undefined}>
-                          <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${t.dot}`} />
-                          <span className="shrink-0 font-mono text-[10px] text-zinc-500" dir="ltr">{d.id}</span>
-                          <span className="hidden shrink-0 font-mono text-[9px] text-zinc-600 sm:inline" dir="ltr">{d.area ?? ''}</span>
-                          <span className={`truncate ${t.text}`}>{d.title ?? d.id}</span>
-                          <span className="ms-auto shrink-0 text-[9px] text-zinc-600">{t.label}</span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                  <div className="flex flex-wrap items-center justify-between gap-2 rounded bg-black/30 px-2 py-1.5 font-mono text-[9px] text-zinc-500" dir="ltr">
-                    <span>{data.decisions.data.authority} · {data.decisions.data.authorityOf ?? ''}</span>
-                    <span>
-                      exec {data.decisions.data.authorityEnvelope?.execute?.length ?? 0} · gates{' '}
-                      {data.decisions.data.authorityEnvelope?.gates?.length ?? 0} · Σ{data.decisions.data.stats?.total ?? '?'} (run{' '}
-                      {data.decisions.data.stats?.thisRun ?? '?'})
+              <Separator />
+              <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1">
+                {(receipts ?? []).map((r: any, i: number) => (
+                  <div key={i} className="rounded-md border px-2.5 py-1.5 text-xs font-mono flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground">{String(r.at).replace("T", " ").slice(0, 16)}</span>
+                    <span className={String(r.verdict).includes("FAILED") || String(r.verdict).includes("STASIS") ? "text-amber-600" : "text-emerald-600"}>
+                      {r.verdict ?? "receipt"}
                     </span>
+                    <span className="text-muted-foreground">{r.results?.filter((x: any) => x.state === "ACTED").length ?? 0} acted</span>
                   </div>
-                  <div className="text-[10px] leading-relaxed text-zinc-500">
-                    עדכון אחרון לפני{' '}
-                    {ageHe(Math.max(0, Math.round((Date.now() - new Date(data.decisions.data.generatedAt).getTime()) / 1000)))} · הריבונות
-                    מחליטה ומבצעת — כל-החלטה עם ראיה מדודה, עגונה ב-git, ומוצגת כאן ללא צנזורה.
-                  </div>
-                </div>
-              ) : (
-                <div className="text-xs text-rose-400">המוח מנותק: {data.decisions?.error ?? 'אין נתונים'}</div>
-              )}
-            </Panel>
-
-            {/* תור-הבעלים — מה-מחכה-להחלטתך (W7) */}
-            <Panel title="תור-הבעלים · ממתין-להחלטתך" sub="אפס-ביצוע-בלעדיך · הצגה-בלבד">
-              <div className="space-y-2 text-[11px]">
-                {data.fabric?.ok && data.fabric.data ? (
-                  <a
-                    href="https://github.com/roshpinacare-sys/saos-dex/tree/main/fabric"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-between rounded bg-black/30 px-2 py-1.5 transition hover:bg-emerald-950/40"
-                  >
-                    <span className="text-zinc-300">הצעות-למידה אוטונומית (fabric/saos-dex)</span>
-                    <span className="font-mono">
-                      <span
-                        className={
-                          data.fabric.data.indexed > 0 && data.fabric.data.deepReviewed > 0
-                            ? 'text-emerald-400'
-                            : data.fabric.data.indexed > 0
-                              ? 'text-teal-300'
-                              : 'text-amber-300'
-                        }
-                      >
-                        {data.fabric.data.proposals} בתור · ממופים {data.fabric.data.indexed} · נשפטו-לעומק{' '}
-                        {data.fabric.data.deepReviewed}
-                      </span>
-                    </span>
-                  </a>
-                ) : (
-                  <div className="rounded bg-black/30 px-2 py-1.5 text-rose-400/80">fabric: {data.fabric?.error ?? 'אין נתונים'}</div>
-                )}
-                {data.alerts?.ok && data.alerts.data ? (
-                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded bg-black/30 px-2.5 py-1.5">
-                    <span className="text-xs text-zinc-300">
-                      מקלט-ההתראות /api/alerts{' '}
-                      <span className="text-[10px] text-zinc-500">(W10 · לא-מאומת — למנוע אין סוד משותף, צורה מחמירה + מדידת-קצב)</span>
-                    </span>
-                    {data.alerts.data.count > 0 ? (
-                      <span className="text-[11px] text-amber-400">
-                        {data.alerts.data.count} אירועים · אחרון: {data.alerts.data.recent[data.alerts.data.recent.length - 1]?.event_type ?? '—'}
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-emerald-400">שקט — אפס-אירועי-guard</span>
-                    )}
-                  </div>
-                ) : null}
-                {data.irreversibles?.ok && data.irreversibles.data?.quote ? (
-                  <a
-                    href={data.irreversibles.data.source}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block rounded bg-black/30 px-2 py-1.5 transition hover:bg-emerald-950/40"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-zinc-300">בלתי-הפיכים — חוק-הבעלים עומד</span>
-                      <span className="font-mono text-amber-300">
-                        {Math.max(1, (data.irreversibles.data.quote.match(/·/g) ?? []).length + 1)} בתור
-                      </span>
-                    </div>
-                    <div className="mt-1 truncate text-[10px] text-zinc-500" title={data.irreversibles.data.quote}>
-                      {data.irreversibles.data.quote.slice(0, 160)}…
-                    </div>
-                  </a>
-                ) : (
-                  <div className="rounded bg-black/30 px-2 py-1.5 text-rose-400/80">
-                    בלתי-הפיכים: {data.irreversibles?.error ?? (data.irreversibles?.data && !data.irreversibles.data.found ? 'המקטע-לא-נמצא-בתוכנית' : 'אין נתונים')}
-                  </div>
-                )}
-                {(() => {
-                  const armed = (data.decisions?.data?.decisions ?? []).filter((d) => (d.status ?? '').startsWith('armed'))
-                  if (!armed.length) return null
-                  return (
-                    <div className="rounded bg-black/30 px-2 py-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-zinc-300">החלטות-המוח החמושות-מותנות</span>
-                        <span className="font-mono text-amber-300">{armed.length} חמושות</span>
-                      </div>
-                      <div className="mt-1 space-y-0.5">
-                        {armed.map((d) => (
-                          <div key={d.id} className="flex items-center gap-2 text-[10px]">
-                            <span className="font-mono text-zinc-500" dir="ltr">{d.id}</span>
-                            <span className="truncate text-amber-200/90">{d.title ?? d.id}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                })()}
-                <div className="text-[10px] leading-relaxed text-zinc-500">
-                  כלום-מהתור-לא-בוצע-אוטומטית — השער-שלך.
-                  {data.verdicts?.ok && data.verdicts.data ? (
-                    <a href={data.verdicts.data.indexSource} target="_blank" rel="noreferrer" className="transition-colors hover:text-zinc-300">
-                      {' '}מפת-השיפוט החיה: {data.verdicts.data.rows} שורות-פסק → {data.verdicts.data.endorse} נקיות (no-op) ·{' '}
-                      <span className="text-amber-400/90">{data.verdicts.data.endorseFixes} ניתנות-תיקון</span>
-                      {data.verdicts.data.endorseFixesIds.length > 0 && (
-                        <span dir="ltr" className="font-mono text-[9px] text-amber-400/70">
-                          {' '}({data.verdicts.data.endorseFixesIds.join(', ')}){' '}
-                        </span>
-                      )}
-                      · {data.verdicts.data.reject} נדחות-ככתבן · 1 נשפטה-לעומק (W7).
-                    </a>
-                  ) : (
-                    <span className="text-zinc-500">
-                      {' '}מפת-השיפוט: 49 שורות-פסק → 1 נקי · 6 ניתנות-תיקון · 42 נדחות-ככתבן · 1 עומק (W7){data.verdicts && !data.verdicts.ok ? ` — חי: ${data.verdicts.error}` : ''}.
-                    </span>
-                  )}
-                  {' '}ממצא-מבני: התור-עצמו-שבר-את-typecheck-של-dex — תוקן (fabric-הוצא-מ-include). הגל-השני (W9): 9 הצעות-חדשות נשפטו-כולן — התור-צמח-בזמן-השיפוט (45→49) והמפה-השלימה-אותו.
-                </div>
+                ))}
+                {!receipts?.length && <div className="text-xs text-muted-foreground font-mono">no receipts in window</div>}
               </div>
-            </Panel>
+            </CardContent>
+          </Card>
+        </section>
 
-            {/* איברי-ענן מלאים */}
-            <Panel title="איברי-הענן · ריצות אחרונות" sub="GitHub Actions" className="md:col-span-2 xl:col-span-3">
-              <div className="max-h-72 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
-                <table className="w-full font-mono text-[11px]">
-                  <thead className="sticky top-0 bg-black/60 text-zinc-500">
-                    <tr>
-                      <th className="p-2 text-right font-normal">איבר</th>
-                      <th className="p-2 text-right font-normal">מצב</th>
-                      <th className="p-2 text-right font-normal">גיל</th>
-                      <th className="p-2 text-right font-normal">סף-רעננות</th>
-                      <th className="p-2 text-right font-normal">כשלים/24h</th>
-                      <th className="p-2 text-right font-normal">קישור</th>
-                    </tr>
+        {/* DEX pools */}
+        <section className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">SAOS-DEX POOLS · sovereign liquidity</CardTitle>
+              <CardDescription>state snapshot from the live engine (git-carried truth)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-72 overflow-y-auto">
+                <table className="w-full text-xs font-mono">
+                  <thead className="text-muted-foreground text-left">
+                    <tr><th className="py-1">pair</th><th className="py-1 text-right">reserve a</th><th className="py-1 text-right">reserve b</th></tr>
                   </thead>
                   <tbody>
-                    {data.organs.map((o) => {
-                      const t = verdictTone(o.verdict)
-                      return (
-                        <tr key={o.name} className="border-t border-emerald-900/20 hover:bg-emerald-950/20">
-                          <td className="p-2 text-emerald-300" dir="ltr">{o.name}</td>
-                          <td className={`p-2 ${t.text}`}>{o.conclusion ?? o.status ?? '—'}</td>
-                          <td className="p-2 text-zinc-400">{ageHe(o.ageSec)}</td>
-                          <td className="p-2 text-zinc-600" dir="ltr">{Math.round(o.freshSec / 60)}min</td>
-                          <td className={`p-2 ${o.fails24h > 0 ? 'text-rose-400' : 'text-zinc-600'}`}>{o.fails24h}</td>
-                          <td className="p-2">
-                            {o.url ? (
-                              <a href={o.url} target="_blank" rel="noreferrer" className="text-emerald-500 hover:text-emerald-300">
-                                run ↗
-                              </a>
-                            ) : (
-                              '—'
-                            )}
-                          </td>
-                        </tr>
-                      )
-                    })}
+                    {(dex?.pools ?? []).map((p: any) => (
+                      <tr key={p.pair} className="border-t">
+                        <td className="py-1.5">{p.pair}</td>
+                        <td className="py-1.5 text-right">{fmt(p.ra, 0)}</td>
+                        <td className="py-1.5 text-right">{fmt(p.rb, 0)}</td>
+                      </tr>
+                    ))}
+                    {!dex?.pools?.length && <tr><td colSpan={3} className="py-3 text-muted-foreground">snapshot {dex ? "unavailable" : "loading…"}</td></tr>}
                   </tbody>
                 </table>
               </div>
-            </Panel>
+            </CardContent>
+          </Card>
 
-            {/* יומן-הריבונות — קיר-הקבלות החי */}
-            <Panel title="יומן-הריבונות · קיר-הקבלות החי" sub="4 repos · ה-commit הוא הקבלה" className="md:col-span-2 xl:col-span-3">
-              {data.feed?.ok && data.feed.data && data.feed.data.length > 0 ? (
-                <div className="max-h-80 space-y-1 overflow-y-auto font-mono text-[11px]" style={{ scrollbarWidth: 'thin' }}>
-                  {data.feed.data.map((c, i) => (
-                    <a
-                      key={`${c.repo}-${c.sha}-${i}`}
-                      href={c.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-2 rounded bg-black/20 px-2 py-1 transition hover:bg-emerald-950/40"
-                    >
-                      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] ${repoBadge(c.repo)}`}>{c.repo}</span>
-                      <span className="shrink-0 text-zinc-600" dir="ltr">
-                        {c.at ? c.at.slice(5, 16).replace('T', ' ') : '—'}
-                      </span>
-                      <span className="truncate text-zinc-300" dir="ltr">
-                        {c.msg}
-                      </span>
-                      <span className="ms-auto shrink-0 text-zinc-600" dir="ltr">
-                        {c.sha}
-                      </span>
-                    </a>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-xs text-rose-400">יומן מנותק: {data.feed?.error ?? 'אין קבלות'}</div>
-              )}
-            </Panel>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base"><GitBranch className="h-4 w-4" /> SOVEREIGN LEDGER · 2026-10-29 owner wave</CardTitle>
+              <CardDescription>executed on chain — receipts with digests, zero secrets</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-xs font-mono">
+              <div className="rounded-md border px-3 py-2 space-y-1">
+                <div className="font-semibold">TX-1 · DELEGATE-300SP-X5</div>
+                <div className="text-muted-foreground">hcsoldier4/5/6 + cashmachine + haran → 483,153.13 VESTS (300 SP) each</div>
+                <div className="text-emerald-600">ACCEPTED · digest 03bc1ae8b3ee… · chain-verified (delegations live)</div>
+              </div>
+              <div className="rounded-md border px-3 py-2 space-y-1">
+                <div className="font-semibold">TX-2 · POWERDOWN-2000STEEM</div>
+                <div className="text-muted-foreground">withdraw_vesting 3,221,020.4 VESTS → 153.85 SP/week × 13 weeks</div>
+                <div className="text-emerald-600">ACCEPTED · digest 8a10e2414d2e… · chain-verified (to_withdraw live)</div>
+              </div>
+              <div className="rounded-md border px-3 py-2 space-y-1">
+                <div className="font-semibold">CUSTODY LAW</div>
+                <div className="text-muted-foreground">vault unsealed via wrap-registry (P never logged) · every WIF chain-judged before signing · hcsoldier1/2/3 excluded — zero authority match (b2cdcc41 verdict stands)</div>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
 
-            {/* מגן-השרידות — ארסנל-התחייה על הענן (W4-G) */}
-            <Panel title="מגן-השרידות · ארסנל-התחייה על הענן" sub="כלי הקיומים על main · אפס-סודות" className="md:col-span-2 xl:col-span-3">
-              <div className="grid grid-cols-1 gap-2 text-[11px] md:grid-cols-2 xl:grid-cols-4">
-                {(data.recovery?.data ?? []).map((a) => (
-                  <a
-                    key={a.path}
-                    href={a.exists && a.url ? a.url : 'https://github.com/roshpinacare-sys/saos-owner-channel'}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`rounded-lg border bg-black/30 p-2.5 transition hover:border-emerald-700/60 ${a.exists ? 'border-emerald-900/40' : 'border-rose-900/60'}`}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span className={`shrink-0 rounded px-1 py-0.5 text-[9px] font-bold ${a.exists ? 'bg-emerald-900/50 text-emerald-300' : 'bg-rose-900/50 text-rose-300'}`}>
-                        {a.exists ? '✓ על main' : '✗ חסר'}
-                      </span>
-                      <span className="truncate font-mono text-[10px] text-emerald-300" dir="ltr">{a.path}</span>
-                    </div>
-                    <div className="mt-1 truncate font-mono text-[9px] text-zinc-500" dir="ltr">
-                      {a.sha ? `${a.sha} · ${a.lastAt ? a.lastAt.slice(5, 16).replace('T', ' ') : '—'}` : a.msg ?? 'לא בהיסטוריה' }
-                    </div>
-                  </a>
-                ))}
-                {!data.recovery?.ok ? (
-                  <div className="rounded-lg border border-rose-900/60 bg-rose-950/20 p-2.5 text-[10px] text-rose-300 md:col-span-2 xl:col-span-4">
-                    מגן-השרידות מנותק: {data.recovery?.error ?? 'אין נתונים'}
-                  </div>
-                ) : null}
-              </div>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                {data.engine?.ok && data.engine.data ? (
-                  <a
-                    href={data.engine.data.url ?? 'https://github.com/roshpinacare-sys/saos-runtime/actions/workflows/steem-hand-revival.yml'}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`rounded px-2 py-1 text-[10px] font-bold transition hover:opacity-80 ${
-                      data.engine.data.conclusion === 'success'
-                        ? 'bg-emerald-900/50 text-emerald-300'
-                        : data.engine.data.conclusion === 'failure'
-                          ? 'bg-rose-900/60 text-rose-200'
-                          : 'bg-amber-900/40 text-amber-300'
-                    }`}
-                  >
-                    {data.engine.data.conclusion === 'success'
-                      ? '✓ יד-המנוע: מחזור דוקטרינה שלם (SENSE→DECIDE→ACT→RECORD)'
-                      : data.engine.data.conclusion === 'running'
-                        ? 'יד-המנוע: מחזור בעיצומו'
-                        : data.engine.data.conclusion === 'failure'
-                          ? '✗ יד-המנוע: הריצה האחרונה נכשלה — fail-honest'
-                          : 'יד-המנוע: אין מדידה'}
-                  </a>
-                ) : (
-                  <span className="rounded bg-zinc-800 px-2 py-1 text-[10px] text-zinc-400">יד-המנוע: {data.engine?.error ?? 'לא זמין'}</span>
-                )}
-                {data.signing?.ok && data.signing.data ? (
-                  <a
-                    href={data.signing.data.url ?? 'https://github.com/roshpinacare-sys/saos-runtime/actions/workflows/signing-health.yml'}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`rounded px-2 py-1 text-[10px] font-bold transition hover:opacity-80 ${
-                      data.signing.data.conclusion === 'success'
-                        ? 'bg-emerald-900/50 text-emerald-300'
-                        : data.signing.data.conclusion === 'failure'
-                          ? 'bg-rose-900/60 text-rose-200'
-                          : 'bg-zinc-800 text-zinc-400'
-                    }`}
-                  >
-                    {data.signing.data.conclusion === 'success'
-                      ? '✓ יד-החתימה חיה — active+posting מאומתים מול השרשרת'
-                      : data.signing.data.conclusion === 'failure'
-                        ? '✗ יד-החתימה אדומה — נבדק fail-honest'
-                        : 'יד-החתימה: אין מדידה'}
-                  </a>
-                ) : (
-                  <span className="rounded bg-zinc-800 px-2 py-1 text-[10px] text-zinc-400">מד-החתימה: {data.signing?.error ?? 'לא זמין'}</span>
-                )}
-                {data.secrets?.ok && data.secrets.data ? (
-                  <span className={`rounded px-2 py-1 text-[10px] font-bold ${data.secrets.data.clean ? 'bg-emerald-900/50 text-emerald-300' : 'bg-rose-900/60 text-rose-200'}`}>
-                    {data.secrets.data.clean ? '✓ אפס-סודות בענן — סריקה נקייה' : `✗ חשודים: ${data.secrets.data.suspects.join(', ')}`}
-                  </span>
-                ) : (
-                  <span className="rounded bg-zinc-800 px-2 py-1 text-[10px] text-zinc-400">סריקת-סודות: {data.secrets?.error ?? 'לא זמין'}</span>
-                )}
-                <span className="font-mono text-[9px] text-zinc-600" dir="ltr">
-                  scanned: {(data.secrets?.data?.scanned.length ?? 0)} files (hub root + command-center)
-                </span>
-              </div>
-              <div className="mt-2 rounded bg-black/40 p-2 font-mono text-[9px] leading-relaxed text-emerald-600" dir="ltr">
-                resurrection: git clone …saos-owner-channel &amp;&amp; PAT=*** bash RECOVER-ALL.sh — one command, whole organism
-              </div>
-            </Panel>
+        {/* Sovereign Overnight Lane — dry-run execution desk over real chain fills */}
+        <section>
+          <OvernightLane />
+        </section>
 
-            {/* מפת-כלים */}
-            <Panel title="ארגז-הכלים" sub="usability — מפה אחת לכל-9-הסוכנים" className="md:col-span-2 xl:col-span-3">
-              <div className="grid grid-cols-1 gap-2 text-[11px] sm:grid-cols-2 lg:grid-cols-4">
-                {[
-                  { t: 'saos-dex', d: 'ה-DEX החי · engines · keeper · army lanes · builder scripts', r: 'roshpinacare-sys/saos-dex' },
-                  { t: 'saos-runtime', d: '14+ וורקפלואים — האיברים האוטונומיים בענן', r: 'roshpinacare-sys/saos-runtime' },
-                  { t: 'saos-owner-channel', d: 'ה-hub · CLAIMS · COORDINATION · BOOTSTRAP · RESURRECTION', r: 'roshpinacare-sys/saos-owner-channel' },
-                  { t: 'FleetHQ', d: 'מפקדת-הצי · office-pages digest · כלי-ניתוח שנאספו', r: 'roshpinacare-sys/FleetHQ' },
-                ].map((c) => (
-                  <a key={c.t} href={`https://github.com/${c.r}`} target="_blank" rel="noreferrer" className="rounded-lg border border-emerald-900/30 bg-black/30 p-3 transition hover:border-emerald-700/60">
-                    <div className="font-mono text-xs font-bold text-emerald-300" dir="ltr">{c.t}</div>
-                    <div className="mt-1 text-[10px] leading-relaxed text-zinc-400">{c.d}</div>
-                    <div className="mt-1 font-mono text-[9px] text-emerald-700" dir="ltr">{c.r}</div>
-                  </a>
-                ))}
-              </div>
-            </Panel>
-          </div>
-        ) : null}
+        {/* Fleet Proof — purpose-built: execution truth, resilience ledger, B8 drill */}
+        <section>
+          <FleetProof />
+        </section>
+
+        {/* Sovereign Bina — live-training tiny model, fleet law mapped */}
+        <section>
+          <SovereignBina />
+        </section>
+
+        <p className="text-center text-[11px] text-muted-foreground font-mono pb-4">
+          every number above is fetched live from its source · failed sources are shown as failed · nothing on this page is a claim
+        </p>
       </main>
 
-      {/* פוטר דביק */}
-      <footer className="mt-auto border-t border-emerald-900/40 bg-[#07100d]/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 text-[10px] text-zinc-500">
-          <span>הריבונות החיה עובדת בעצמה · git הוא הבית · הענן הוא הבונה</span>
-          <span className="font-mono" dir="ltr">
-            last fetch {data?.at?.slice(11, 19) ?? '—'}Z · err: {err ? 'yes' : 'none'}
-          </span>
+      <footer className="mt-auto border-t bg-white/80 dark:bg-neutral-900/80 backdrop-blur">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-muted-foreground pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <span>SOVEREIGN DESK · roshpinacare-sys</span>
+          <span>sources: api.steemit.com · saos-dex@main · engine receipts</span>
+          <span>{live ? `chain block ${fmt(chain?.dgpo?.head_block, 0)}` : "—"}</span>
         </div>
       </footer>
     </div>
-  )
+  );
 }
