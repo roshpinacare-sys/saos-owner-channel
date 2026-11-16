@@ -1,0 +1,29 @@
+# Dependabot — corrected config (R368, 2026-11-16).
+#
+# MEASURED FAILURE (runs 43709789559 + retries, e.g. 43812598901 "npm_and_yarn in
+# /command-center for sharp"): this repo's lockfiles are bun.lock (root + the
+# /command-center mirror of sovereign-desk). Dependabot's npm_and_yarn ecosystem
+# cannot update bun.lock — GitHub's own error text: "Set package-ecosystem: 'bun'".
+# Every retry with the old shape = a fresh red run on the channel = Pulse heartbeat
+# degraded (issue #260). This config makes the update jobs structurally valid:
+# they succeed or no-op — never misconfigured_tooling.
+version: 2
+updates:
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps(root)"
+  - package-ecosystem: "bun"
+    directory: "/command-center"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps(command-center)"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps(actions)"
