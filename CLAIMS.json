@@ -1,6 +1,6 @@
 {
   "schema": "saos-9agent-claims@1",
-  "updatedAt": "2026-11-15T20:40:00Z",
+  "updatedAt": "2026-11-16T05:47:00Z",
   "rules": {
     "branchNaming": "agent/<agent-id>/<lane>",
     "noDirectMainPush": true,
@@ -298,6 +298,23 @@
       "expiresAt": "2026-11-16T20:40:00Z",
       "scope": "wipe-26 resurrection + revenue-rail root cures, zero new secrets, zero key prints: (1) boot-fleet + RECOVER-ALL rerun, engine/dex/vault homes from git alone; (2) R366 THE MONTH-LONG SILENCE — doPublish R297 referenced out-of-scope 'master' (ReferenceError at every ledger rebuild since the 12h-TTL cache went stale 2026-10-19) → ledger-unavailable-fail-closed → every draft vetoed → publish rail silent a month; fixed to masterAccount() (engine 27713814e), live-verified ledger 460 posts 0 failed; (3) R367 full avoid-shield — spentTitles rides the bridge payload, route cap 30→140+60, dedupe drops reason-coded (R308 compliance; engine a7a416b74 + desk d2ccebe); (4) R364 anchor-witness anchors origin/saos-cockpit not local HEAD (PR #38, measured orphan b7023977 GC-gone); (5) R365 escrow/treasury lanes wired LIVE_FLEET_KEYS (PR #39; resolve-keys census-relay 27→16 live) + W40 canary parties lsa/haran/macrame (saos-dex ce82bf0e) — canary COMPLETE on chain run 43756144998 (transfer 260466b3, approves 8625cbda+d724095f, release 81eabcdb); (6) beat-keeper git-resident at steem@saos-cockpit deploy/ + desk scheduler runs sovereign+dex keepers every :00/:30; (7) ONLINE content lane fed 3 fresh bridge drafts (DRAFTS-QUEUED 20:37Z).",
       "evidence": "custody heartbeat 14/14 @ 2026-11-15T19:19Z (saos-runtime state/beat/ci-last-heartbeat.json); escrow run 43756144998 SUCCESS 4 txids; engine commits 27713814e/a7a416b74/56b637802; PRs #38 (8d8914d9) #39 (7b8caf89); desk 4c24032/d2ccebe; queue 30 rows (3 drafted) @ 20:37Z"
+    },
+    {
+      "repo": "saos-owner-channel + Pulse(observed) + 9 private repos(read-only census)",
+      "lane": "R368-issue260-heartbeat-green + full-private-census",
+      "agent": "zai",
+      "branch": "main (direct, R364-R367 precedent; single active agent, FF only)",
+      "baseBranch": "main",
+      "baseCommit": "7b90310",
+      "claimedAt": "2026-11-16T05:47:00Z",
+      "ttlHours": 24,
+      "summary": "Pulse issue #260 root-cure: heartbeat degraded 18h because owner-channel's latest Actions run was a Dependabot bun misconfig failure (no workflow existed here to supersede it; 7d freshness window). Added channel-guard (envelope ledger validate + CLAIMS TTL census + receipt) — a real guard, fail-closed. ALSO: full private-repo census per owner order (9/9 cloned+examined), interrupted verifications closed (steem crown-vault-recovery 43713515988 = SUCCESS, saos-runtime beat 43713978218 = SUCCESS, custody 14/14 per worklog 19:19Z heartbeat).",
+      "evidence": [
+        "local pre-push: bun run validate => OK 3 messages, channelRoot 87901b8c858f160c…",
+        "local pre-push: bun scripts/lease-census.mjs => claimsTotal 16, active 1, expired 15 (named, not hidden)",
+        "dependabot failure log run 43709789559 job 132798642742: misconfigured_tooling bun.lock vs npm_and_yarn",
+        "post-push: channel-guard run on main = the green superseder (run ID lands in state/channel-guard.json receipts)"
+      ]
     }
   ]
 }

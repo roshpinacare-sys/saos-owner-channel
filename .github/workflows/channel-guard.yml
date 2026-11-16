@@ -1,0 +1,53 @@
+# channel-guard — the owner channel carries its own green clock.
+#
+# WHY THIS EXISTS (R368, 2026-11-16): Pulse issue #260 measured heartbeat degraded
+# for 18h because this repo's LATEST Actions run was a Dependabot failure
+# (misconfigured_tooling: `npm_and_yarn` ecosystem pointed at a bun.lock directory;
+# config already absent from main — the red could not age out for 7 days and no
+# workflow existed here to supersede it). The channel is the fleet's lease registry
+# and instruction ledger: it deserves a REAL guard, not a no-op green.
+#
+# LAW (fail-closed, per PROTOCOL.md):
+#   1. envelope ledger integrity — `bun run validate` (sha256 roots, lifecycle, orphans)
+#   2. lease census — CLAIMS.json TTL law: expired leases are named, never hidden
+#   3. receipt — state/channel-guard.json committed [skip ci]; this run IS the proof
+on:
+  schedule:
+    - cron: '17 */6 * * *' # every 6h at :17 — off the :00/:30 beat walls
+  push:
+    paths: ['CLAIMS.json', 'inbox/**', 'outbox/**', 'state/**', 'scripts/**', '.github/workflows/channel-guard.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: channel-guard
+  cancel-in-progress: false
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: install (frozen)
+        run: bun install --frozen-lockfile
+      - name: envelope ledger integrity (fail-closed)
+        run: bun run validate
+      - name: lease census (CLAIMS.json TTL law)
+        run: bun scripts/lease-census.mjs
+      - name: record receipt
+        run: |
+          git config user.name "roshpinacare-sys"
+          git config user.email "326012154+roshpinacare-sys@users.noreply.github.com"
+          git add state/channel-guard.json
+          if git diff --cached --quiet; then
+            echo "no state change — clean no-op (named terminal: no-op)"
+          else
+            git commit -m "channel-guard receipt [skip ci]"
+            git push
+          fi
