@@ -1,6 +1,6 @@
 {
   "schema": "saos-9agent-claims@1",
-  "updatedAt": "2026-11-16T05:47:00Z",
+  "updatedAt": "2026-11-16T06:20:00Z",
   "rules": {
     "branchNaming": "agent/<agent-id>/<lane>",
     "noDirectMainPush": true,
@@ -314,6 +314,23 @@
         "local pre-push: bun scripts/lease-census.mjs => claimsTotal 16, active 1, expired 15 (named, not hidden)",
         "dependabot failure log run 43709789559 job 132798642742: misconfigured_tooling bun.lock vs npm_and_yarn",
         "post-push: channel-guard run on main = the green superseder (run ID lands in state/channel-guard.json receipts)"
+      ]
+    },
+    {
+      "repo": "saos-runtime (army-active-revive) + vault-home (seal) + LIVE_FLEET_KEYS×4 repos",
+      "lane": "R369-army-key-stasis-cure",
+      "agent": "zai",
+      "branch": "agent/zai/R369-army-revive (PR to main, self-merge precedent #38/#39)",
+      "baseBranch": "main",
+      "claimedAt": "2026-11-16T06:20:00Z",
+      "ttlHours": 24,
+      "summary": "5 army accounts in KEY-STASIS (cashmachine/israelnews/hcsoldier4/5/6 — no live active WIF; actives stranded on a deleted branch since the 10-28 exposure-seal; authorities UNCHANGED on chain). Cure per keys-registry law (owner = recovery authority): surgical owner-signed account_update rotating ONLY the active role to a fresh key; posting/memo preserved; owner untouched. Material pool = LIVE_FLEET_KEYS crown map + custody-restore-v2 bundle (VAULT_RESTORE_PASS) + archive fallback, every WIF chain-judged. Incremental LIVE_FLEET_KEYS PUT ×4 repos per account + vault-home ciphertext seal. Fingerprints only.",
+      "evidence": [
+        "army-receipt 2026-11-16T05:41Z: states={KEY-STASIS:5,FUEL-STASIS:4,AT-TARGET:4}",
+        "crown matrix 2026-11-15T16:15Z run 43733475025: no steem:active for the 5; owner LIVE for israelnews/cashmachine",
+        "steem main 557ef3881 custody-restore-v2: mother-line owner keys hcsoldier4/5/6 owner LIVE derived, 14/14",
+        "revive-actives.mjs --selftest: PASS 4 vectors + sodium seal roundtrip (local, 2026-11-16T06:2xZ)",
+        "full-history scan 2026-11-16: KEYS-ROT2 zips unreachable from every current ref (git log --all across saos-cockpit/main/agent-9-archive/tags)"
       ]
     }
   ]
