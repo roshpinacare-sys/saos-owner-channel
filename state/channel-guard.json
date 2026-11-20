@@ -1,6 +1,6 @@
 {
   "schema": "saos-owner-channel/channel-guard@1",
-  "at": "2026-11-20T00:36:58.544Z",
+  "at": "2026-11-20T15:26:34.711Z",
   "envelopeLedger": "VALID (bun run validate — fail-closed upstream step)",
   "claimsTotal": 18,
   "leasesActive": 0,
